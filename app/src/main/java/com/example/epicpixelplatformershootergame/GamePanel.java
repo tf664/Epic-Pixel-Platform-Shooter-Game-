@@ -24,6 +24,8 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
     private GameLoop gameLoop;
 
     private int playerAnimationIndexX, playerAnimationIndexY, playerFaceDirection = GameConstants.Facing_Direction.RIGHT;
+    private int gruntTwoAnimationIndexY;
+
     private int animationTick;
     private double animationSpeed = 8.5;
 
@@ -48,7 +50,7 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
         // c.drawBitmap(GameCharacters.PLAYER.getSprite(0, 2), 600, 600, null);
         // c.drawBitmap(GameCharacters.PLAYER.getSprite(0, 3), 800, 600, null);
 
-        c.drawBitmap(GameCharacters.GRUNTTWO.getSprite(0, 0), 300, 1000, null);
+        c.drawBitmap(GameCharacters.GRUNTTWO.getSprite(gruntTwoAnimationIndexY, 0), 105, 40, null);
 
         holder.unlockCanvasAndPost(c);
     }
@@ -72,6 +74,12 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
                 playerAnimationIndexY = 0;
             } else if (playerFaceDirection == GameConstants.Facing_Direction.RIGHT) {
                 playerAnimationIndexY = 1;
+            }
+
+            gruntTwoAnimationIndexY++;
+
+            if (gruntTwoAnimationIndexY >= 59) {
+                gruntTwoAnimationIndexY = 0;
             }
         }
     }
