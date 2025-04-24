@@ -23,7 +23,7 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
     private Random rand = new Random();
     private GameLoop gameLoop;
 
-    private int playerAnimationIndexX, playerAnimationIndexY, playerFaceDirection = GameConstants.Facing_Direction.LEFT;
+    private int playerAnimationIndexX, playerAnimationIndexY, playerFaceDirection = GameConstants.Facing_Direction.RIGHT;
     private int animationTick;
     private double animationSpeed = 8.5;
 
@@ -65,12 +65,13 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
             playerAnimationIndexX++;
 
             if (playerAnimationIndexX >= 4) {
-                playerAnimationIndexY = 1;
                 playerAnimationIndexX = 0;
             }
-            if (playerAnimationIndexY == 1 && playerAnimationIndexX >= 2) {
-                playerAnimationIndexX = 0;
+
+            if (playerFaceDirection == GameConstants.Facing_Direction.LEFT) {
                 playerAnimationIndexY = 0;
+            } else if (playerFaceDirection == GameConstants.Facing_Direction.RIGHT) {
+                playerAnimationIndexY = 1;
             }
         }
     }
@@ -79,6 +80,18 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
     @Override
     public boolean onTouchEvent(MotionEvent event) { // Part of View, which SurfaceView extends and GamePanel extends SurfaceView
         if (event.getAction() == MotionEvent.ACTION_DOWN) {
+
+            float newX = event.getX();
+            float newY = event.getY(); // unnecessary
+
+            // float xDiff = Math.abs(newX - x);
+
+            if (newX < x) {
+                playerFaceDirection = GameConstants.Facing_Direction.RIGHT;
+            } else {
+                playerFaceDirection = GameConstants.Facing_Direction.LEFT;
+            }
+
             x = event.getX();
             y = event.getY();
         }
@@ -91,7 +104,8 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
     }
 
     @Override
-    public void surfaceChanged(@NonNull SurfaceHolder holder, int format, int width, int height) {
+    public void surfaceChanged(@NonNull SurfaceHolder holder, int format, int width,
+                               int height) {
 
     }
 
