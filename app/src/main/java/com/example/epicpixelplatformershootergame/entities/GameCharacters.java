@@ -8,7 +8,7 @@ import com.example.epicpixelplatformershootergame.R;
 
 public enum GameCharacters {
     PLAYER(R.drawable.player_spritesheet_walking, 32, 48),
-    GRUNTTWO(R.drawable.grunttwo_spritesheet_shooting, 105, 40);
+    GRUNTTWO(R.drawable.grunttwo_spritesheet_shooting, 105, 41);
 
     private int boxWidth;
     private int boxHeight;
@@ -25,8 +25,13 @@ public enum GameCharacters {
 
         spriteSheet = BitmapFactory.decodeResource(MainActivity.getGameContext().getResources(), resId, options);
 
-        int columns = spriteSheet.getWidth() / boxWidth;
-        int rows = spriteSheet.getHeight() / boxHeight;
+        int columns = Math.max(1, spriteSheet.getWidth() / boxWidth);
+        int rows = Math.max(1, spriteSheet.getHeight() / boxHeight);
+
+        System.out.println("Height: " + spriteSheet.getHeight());
+        System.out.println("Width: " + spriteSheet.getWidth());
+        System.out.println("Rows: " + rows);
+        System.out.println("Columns: " + columns);
 
         sprites = new Bitmap[rows][columns];
 
