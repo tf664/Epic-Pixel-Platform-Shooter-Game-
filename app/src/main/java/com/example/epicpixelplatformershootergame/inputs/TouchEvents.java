@@ -12,8 +12,8 @@ import java.util.Collection;
 public class TouchEvents {
     private GamePanel gamePanel;
 
-    private float xCenterLeft = 150, yCenterLeft = 1700;
-    private float xCenterRight = 950, yCenterRight = 1700;
+    private float xCenterLeft = 150, yCenterLeft = 800;
+    private float xCenterRight = 500, yCenterRight = 800;
     private float radius = 100;
     private Paint circlePaint;
 
