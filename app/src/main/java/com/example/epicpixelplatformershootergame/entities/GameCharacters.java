@@ -28,10 +28,10 @@ public enum GameCharacters {
         int columns = Math.max(1, spriteSheet.getWidth() / boxWidth);
         int rows = Math.max(1, spriteSheet.getHeight() / boxHeight);
 
-        System.out.println("Height: " + spriteSheet.getHeight());
-        System.out.println("Width: " + spriteSheet.getWidth());
-        System.out.println("Rows: " + rows);
-        System.out.println("Columns: " + columns);
+        System.out.println("Height: " + spriteSheet.getHeight()); // debug
+        System.out.println("Width: " + spriteSheet.getWidth()); // debug
+        System.out.println("Rows: " + rows); // debug
+        System.out.println("Columns: " + columns); // debug
 
         sprites = new Bitmap[rows][columns];
 
