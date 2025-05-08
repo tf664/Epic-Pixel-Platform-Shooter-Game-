@@ -7,7 +7,6 @@ import android.view.MotionEvent;
 
 import com.example.epicpixelplatformershootergame.GamePanel;
 
-import java.util.Collection;
 
 public class TouchEvents {
     private GamePanel gamePanel;
