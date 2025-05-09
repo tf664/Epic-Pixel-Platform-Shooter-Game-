@@ -5,17 +5,18 @@ import android.graphics.BitmapFactory;
 
 import com.example.epicpixelplatformershootergame.MainActivity;
 import com.example.epicpixelplatformershootergame.R;
+import com.example.epicpixelplatformershootergame.helper.interfaces.BitmapMethods;
 
-public enum GameCharacters {
+public enum GameCharacters implements BitmapMethods {
     PLAYER(R.drawable.player_spritesheet_walking, 32, 48),
     GRUNTTWO(R.drawable.grunttwo_spritesheet_shooting, 105, 41);
 
     private int boxWidth;
     private int boxHeight;
-    private Bitmap spriteSheet;
 
+    private Bitmap spriteSheet;
     private Bitmap[][] sprites;
-    private BitmapFactory.Options options = new BitmapFactory.Options();
+
 
     GameCharacters(int resId, int boxWidth, int boxHeight) {
         this.boxWidth = boxWidth;
@@ -51,8 +52,4 @@ public enum GameCharacters {
         return sprites[yPos][xPos];
     }
 
-    private Bitmap getScaledBitmap(Bitmap original) {
-        int scale = 10;
-        return Bitmap.createScaledBitmap(original, original.getWidth() * scale, original.getHeight() * scale, false);
-    }
 }

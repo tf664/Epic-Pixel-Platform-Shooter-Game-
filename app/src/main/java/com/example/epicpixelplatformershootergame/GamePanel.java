@@ -11,9 +11,11 @@ import android.view.SurfaceView;
 import androidx.annotation.NonNull;
 
 import com.example.epicpixelplatformershootergame.entities.GameCharacters;
+import com.example.epicpixelplatformershootergame.environments.GameMap;
 import com.example.epicpixelplatformershootergame.helper.GameConstants;
 import com.example.epicpixelplatformershootergame.inputs.TouchEvents;
 
+import java.util.Arrays;
 import java.util.Random;
 
 
@@ -36,7 +38,10 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
     private int animationFrame;
 
     private int animationTick;
-    private double animationSpeed = 9.5;
+    private double animationSpeed = 7.5;
+
+    // Test map
+    private GameMap testMap;
 
     public GamePanel(Context context) {
         super(context);
@@ -44,38 +49,33 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
         holder.addCallback(this);
         redPaint.setColor(Color.RED);
         touchEvents = new TouchEvents(this);
+
         debug = new Debug(); // Create instance for debug mode
         debug.setDebugMode(true); // sets debug mode
 
         gameLoop = new GameLoop(this);
+
+        // TESTING MAP
+        int[][] testArrayWithIds = new int[10][10];
+        for (int i = 0; i < testArrayWithIds.length; i++) {
+            Arrays.fill(testArrayWithIds[i], 0);
+        }
+        testMap = new GameMap(testArrayWithIds);
     }
 
     public void render() {
         Canvas c = holder.lockCanvas();
         c.drawColor(Color.BLACK);
 
+        testMap.draw(c); // test
+
         touchEvents.draw(c);
 
         c.drawBitmap(GameCharacters.PLAYER.getSprite(playerAnimationIndexY, playerAnimationIndexX), x, y, null);
         c.drawBitmap(GameCharacters.GRUNTTWO.getSprite(gruntTwoAnimationIndexY, 0), 800, 500, null);
 
-        c.drawBitmap(GameCharacters.PLAYER.getSprite(0, 1), 900, 400, null);
-        c.drawBitmap(GameCharacters.PLAYER.getSprite(0, 2), 1200, 400, null);
-        c.drawBitmap(GameCharacters.PLAYER.getSprite(0, 3), 1500, 400, null);
-        c.drawBitmap(GameCharacters.PLAYER.getSprite(1, 0), 1800, 400, null);
-
         if (debug.isDebugMode())
             debug.drawDebug(c, x, y, 32 * 10, 48 * 10);
-
-
-        Paint paint = new Paint();
-        paint.setColor(Color.RED);
-        paint.setStyle(Paint.Style.STROKE);
-        paint.setStrokeWidth(5);
-        c.drawRect(900, 400, 900 + 320, 400 + 480, paint);  // Weitere Player-Sprites
-        c.drawRect(1200, 400, 1200 + 320, 400 + 480, paint);
-        c.drawRect(1500, 400, 1500 + 320, 400 + 480, paint);
-        c.drawRect(1800, 400, 1800 + 320, 400 + 480, paint);
 
         holder.unlockCanvasAndPost(c);
     }
