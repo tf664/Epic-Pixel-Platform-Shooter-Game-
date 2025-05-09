@@ -10,7 +10,9 @@ public interface BitmapMethods {
     BitmapFactory.Options options = new BitmapFactory.Options();
 
 
-    default Bitmap getScaledBitmap(Bitmap original) {
-        return Bitmap.createScaledBitmap(original, original.getWidth() * GameConstants.Sprite.SCALE_MULTIPLIER, original.getHeight() * GameConstants.Sprite.SCALE_MULTIPLIER, false);
+    default Bitmap getScaledBitmap(Bitmap original , int scaleMultiplier) {
+        return Bitmap.createScaledBitmap(original, original.getWidth() * scaleMultiplier,
+                original.getHeight() * scaleMultiplier,
+                false);
     }
 }

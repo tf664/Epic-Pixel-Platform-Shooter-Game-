@@ -28,10 +28,24 @@ public final class GameConstants {
     /**
      *
      */
-    public static final class Sprite {
-        public static final int DEFAULT_SIZE = 32;
-        public static final int SCALE_MULTIPLIER = 3;
-        public static final int SIZE = DEFAULT_SIZE * SCALE_MULTIPLIER;
+    public static final class FloorTile {
+        public static final int WIDTH = 32;
+        public static final int HEIGHT = 32;
+        public static final int SCALE_MULTIPLIER = 1;
+    }
+
+    public static final class Player {
+        public static final int FRAME_WIDTH = 32;
+        public static final int FRAME_HEIGHT = 48;
+        public static final int SCALE_MULTIPLIER = 6;
+        public static final int WIDTH = FRAME_WIDTH * SCALE_MULTIPLIER;
+        public static final int HEIGHT = FRAME_HEIGHT * SCALE_MULTIPLIER;
+    }
+
+    public static final class GruntTwo {
+        public static final int WIDTH = 105;
+        public static final int HEIGHT = 41;
+        public static final int SCALE_MULTIPLIER = 5; // adjust visually
     }
 }
 

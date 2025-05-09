@@ -24,8 +24,9 @@ public enum Floor implements BitmapMethods {
         for (int i = 0; i < tilesInHeight; i++) {
             for (int j = 0; j < tilesInWidth; j++) {
                 int index = i * tilesInWidth + j;
-                tiles[index] = getScaledBitmap(Bitmap.createBitmap(tileSheet, j * GameConstants.Sprite.DEFAULT_SIZE, i * GameConstants.Sprite.DEFAULT_SIZE,
-                        GameConstants.Sprite.DEFAULT_SIZE, GameConstants.Sprite.DEFAULT_SIZE));
+                Bitmap floorBitmap = Bitmap.createBitmap(tileSheet, j * GameConstants.FloorTile.WIDTH, i * GameConstants.FloorTile.HEIGHT,
+                        GameConstants.FloorTile.WIDTH, GameConstants.FloorTile.HEIGHT);
+                tiles[index] = getScaledBitmap(floorBitmap, GameConstants.FloorTile.SCALE_MULTIPLIER);
             }
         }
     }

@@ -38,16 +38,33 @@ public enum GameCharacters implements BitmapMethods {
 
         for (int j = 0; j < sprites.length; j++) {
             for (int i = 0; i < sprites[j].length; i++) {
-                Bitmap frame = Bitmap.createBitmap(spriteSheet, i * GameConstants.Sprite.DEFAULT_SIZE,
-                        j * GameConstants.Sprite.DEFAULT_SIZE,
-                        GameConstants.Sprite.DEFAULT_SIZE, GameConstants.Sprite.DEFAULT_SIZE);
-                sprites[j][i] = getScaledBitmap(frame);
+                int frameWidth = this.boxWidth;
+                int frameHeight = this.boxHeight;
+
+                Bitmap frame = Bitmap.createBitmap(
+                        spriteSheet,
+                        i * frameWidth,
+                        j * frameHeight,
+                        frameWidth,
+                        frameHeight);
+                sprites[j][i] = getScaledBitmap(frame, getScaleMultiplier());
             }
         }
     }
 
     public Bitmap getSpriteSheet() {
         return spriteSheet;
+    }
+
+    private int getScaleMultiplier() {
+        switch (this) {
+            case PLAYER:
+                return GameConstants.Player.SCALE_MULTIPLIER;
+            case GRUNTTWO:
+                return GameConstants.GruntTwo.SCALE_MULTIPLIER;
+        };
+
+        return 0;
     }
 
     public Bitmap getSprite(int yPos, int xPos) {

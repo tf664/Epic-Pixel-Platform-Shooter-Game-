@@ -56,9 +56,9 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
         gameLoop = new GameLoop(this);
 
         // TESTING MAP
-        int[][] testArrayWithIds = new int[rand.nextInt(GAME_WIDTH)][rand.nextInt(GAME_HEIGHT)];
+        int[][] testArrayWithIds = new int[10][100]; // adjust to screen without lagging
         for (int i = 0; i < testArrayWithIds.length; i++) {
-            for (int j = 0; j < testArrayWithIds.length; j++) {
+            for (int j = 0; j < testArrayWithIds[i].length; j++) {
                 testArrayWithIds[i][j] = rand.nextInt(3); // random tile 0, 1, or 2
             }
         }
