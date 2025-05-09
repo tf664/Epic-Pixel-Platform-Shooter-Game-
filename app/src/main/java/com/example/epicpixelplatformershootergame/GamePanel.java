@@ -1,5 +1,8 @@
 package com.example.epicpixelplatformershootergame;
 
+import static com.example.epicpixelplatformershootergame.MainActivity.GAME_HEIGHT;
+import static com.example.epicpixelplatformershootergame.MainActivity.GAME_WIDTH;
+
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -24,7 +27,7 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
     private SurfaceHolder holder;
 
     private Random rand = new Random();
-    private Debug debug;
+    ;
 
     private GameLoop gameLoop;
     private TouchEvents touchEvents;
@@ -50,15 +53,14 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
         redPaint.setColor(Color.RED);
         touchEvents = new TouchEvents(this);
 
-        debug = new Debug(); // Create instance for debug mode
-        debug.setDebugMode(true); // sets debug mode
-
         gameLoop = new GameLoop(this);
 
         // TESTING MAP
-        int[][] testArrayWithIds = new int[10][10];
+        int[][] testArrayWithIds = new int[rand.nextInt(GAME_WIDTH)][rand.nextInt(GAME_HEIGHT)];
         for (int i = 0; i < testArrayWithIds.length; i++) {
-            Arrays.fill(testArrayWithIds[i], 0);
+            for (int j = 0; j < testArrayWithIds.length; j++) {
+                testArrayWithIds[i][j] = rand.nextInt(3); // random tile 0, 1, or 2
+            }
         }
         testMap = new GameMap(testArrayWithIds);
     }
@@ -67,16 +69,18 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
         Canvas c = holder.lockCanvas();
         c.drawColor(Color.BLACK);
 
+        // Step 1: Draw the map tiles (background)
         testMap.draw(c); // test
 
         touchEvents.draw(c);
-
+        // Step 2: Draw the player and other characters (on top of the tiles)
         c.drawBitmap(GameCharacters.PLAYER.getSprite(playerAnimationIndexY, playerAnimationIndexX), x, y, null);
         c.drawBitmap(GameCharacters.GRUNTTWO.getSprite(gruntTwoAnimationIndexY, 0), 800, 500, null);
 
-        if (debug.isDebugMode())
-            debug.drawDebug(c, x, y, 32 * 10, 48 * 10);
+        if (Debug.isDebugMode())
+            Debug.drawDebug(c, x, y, 32 * 10, 48 * 10);
 
+        // Commit the drawing to the screen
         holder.unlockCanvasAndPost(c);
     }
 

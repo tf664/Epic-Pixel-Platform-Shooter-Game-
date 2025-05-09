@@ -5,6 +5,7 @@ import android.graphics.BitmapFactory;
 
 import com.example.epicpixelplatformershootergame.MainActivity;
 import com.example.epicpixelplatformershootergame.R;
+import com.example.epicpixelplatformershootergame.helper.GameConstants;
 import com.example.epicpixelplatformershootergame.helper.interfaces.BitmapMethods;
 
 public enum Floor implements BitmapMethods {
@@ -23,7 +24,8 @@ public enum Floor implements BitmapMethods {
         for (int i = 0; i < tilesInHeight; i++) {
             for (int j = 0; j < tilesInWidth; j++) {
                 int index = i * tilesInWidth + j;
-                tiles[index] = getScaledBitmap(Bitmap.createBitmap(tileSheet, 32 * j, 32 * i, 32, 32));
+                tiles[index] = getScaledBitmap(Bitmap.createBitmap(tileSheet, j * GameConstants.Sprite.DEFAULT_SIZE, i * GameConstants.Sprite.DEFAULT_SIZE,
+                        GameConstants.Sprite.DEFAULT_SIZE, GameConstants.Sprite.DEFAULT_SIZE));
             }
         }
     }

@@ -3,8 +3,10 @@ package com.example.epicpixelplatformershootergame.entities;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 
+import com.example.epicpixelplatformershootergame.Debug;
 import com.example.epicpixelplatformershootergame.MainActivity;
 import com.example.epicpixelplatformershootergame.R;
+import com.example.epicpixelplatformershootergame.helper.GameConstants;
 import com.example.epicpixelplatformershootergame.helper.interfaces.BitmapMethods;
 
 public enum GameCharacters implements BitmapMethods {
@@ -29,16 +31,16 @@ public enum GameCharacters implements BitmapMethods {
         int columns = Math.max(1, spriteSheet.getWidth() / boxWidth);
         int rows = Math.max(1, spriteSheet.getHeight() / boxHeight);
 
-        System.out.println("Height: " + spriteSheet.getHeight()); // debug
-        System.out.println("Width: " + spriteSheet.getWidth()); // debug
-        System.out.println("Rows: " + rows); // debug
-        System.out.println("Columns: " + columns); // debug
+        if (Debug.isDebugMode())
+            Debug.spriteInfo(spriteSheet, rows, columns);
 
         sprites = new Bitmap[rows][columns];
 
         for (int j = 0; j < sprites.length; j++) {
             for (int i = 0; i < sprites[j].length; i++) {
-                Bitmap frame = Bitmap.createBitmap(spriteSheet, i * boxWidth, j * boxHeight, boxWidth, boxHeight);
+                Bitmap frame = Bitmap.createBitmap(spriteSheet, i * GameConstants.Sprite.DEFAULT_SIZE,
+                        j * GameConstants.Sprite.DEFAULT_SIZE,
+                        GameConstants.Sprite.DEFAULT_SIZE, GameConstants.Sprite.DEFAULT_SIZE);
                 sprites[j][i] = getScaledBitmap(frame);
             }
         }

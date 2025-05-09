@@ -1,23 +1,26 @@
 package com.example.epicpixelplatformershootergame;
 
+import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 
 public class Debug {
 
-    private boolean debugMode = false;
+    private static boolean debugMode = false;
 
-    public void setDebugMode(boolean debugMode) {
-        this.debugMode = debugMode;
+    private Debug() {} // prevent instantiation
+
+    public static void setDebugMode(boolean debugMode) {
+        Debug.debugMode = debugMode;
     }
 
-    public boolean isDebugMode() {
+    public static boolean isDebugMode() {
         return debugMode;
     }
 
     // Rectangle around character
-    public void drawDebug(Canvas c, float x, float y, float spriteWidth, float spriteHeight) {
+    public static void drawDebug(Canvas c, float x, float y, float spriteWidth, float spriteHeight) {
         if (debugMode) {
             Paint paint = new Paint();
             paint.setColor(Color.RED);
@@ -26,5 +29,12 @@ public class Debug {
 
             c.drawRect(x, y, x + spriteWidth, y + spriteHeight, paint);
         }
+    }
+
+    public static void spriteInfo(Bitmap spriteSheet, int rows, int columns) {
+        System.out.println("Height: " + spriteSheet.getHeight()); // debug
+        System.out.println("Width: " + spriteSheet.getWidth()); // debug
+        System.out.println("Rows: " + rows); // debug
+        System.out.println("Columns: " + columns); // debug
     }
 }
