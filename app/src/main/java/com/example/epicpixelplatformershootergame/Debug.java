@@ -6,8 +6,7 @@ import android.graphics.Color;
 import android.graphics.Paint;
 
 public class Debug {
-
-    private static boolean debugMode = false;
+    private static boolean debugMode;
 
     private Debug() {} // prevent instantiation
 

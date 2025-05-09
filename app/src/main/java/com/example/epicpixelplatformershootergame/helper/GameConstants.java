@@ -11,9 +11,7 @@ public final class GameConstants {
      * Sets debug mode
      */
     public static final class DebugMode {
-        static {
-            Debug.setDebugMode(true);
-        }
+        public static final boolean debugMode = true;
     }
 
     /**

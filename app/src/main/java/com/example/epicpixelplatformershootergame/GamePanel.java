@@ -18,7 +18,6 @@ import com.example.epicpixelplatformershootergame.environments.GameMap;
 import com.example.epicpixelplatformershootergame.helper.GameConstants;
 import com.example.epicpixelplatformershootergame.inputs.TouchEvents;
 
-import java.util.Arrays;
 import java.util.Random;
 
 
@@ -35,7 +34,6 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
     private int playerAnimationIndexX, playerAnimationIndexY = 0, playerFaceDirection = GameConstants.Facing_Direction.RIGHT;
     private int gruntTwoAnimationIndexY;
 
-    private float x, y;
     private boolean moveLeft = false, moveRight = false;
     private int screenWidth, screenHeight;
     private int animationFrame;
@@ -46,8 +44,19 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
     // Test map
     private GameMap testMap;
 
+    // Jumping Physics
+    private float playerX = 100, playerY = 100;
+    private float playerVelocityY = 0;
+    private boolean isJumping = false;
+
+    private final float GRAVITY = 0.5f;
+    private final float JUMP_STRENGTH = -12;
+
+
     public GamePanel(Context context) {
         super(context);
+        Debug.setDebugMode(GameConstants.DebugMode.debugMode);
+
         holder = getHolder();
         holder.addCallback(this);
         redPaint.setColor(Color.RED);
@@ -56,7 +65,7 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
         gameLoop = new GameLoop(this);
 
         // TESTING MAP
-        int[][] testArrayWithIds = new int[10][100]; // adjust to screen without lagging
+        int[][] testArrayWithIds = new int[10][GAME_WIDTH / GameConstants.FloorTile.WIDTH]; // adjust to screen without lagging
         for (int i = 0; i < testArrayWithIds.length; i++) {
             for (int j = 0; j < testArrayWithIds[i].length; j++) {
                 testArrayWithIds[i][j] = rand.nextInt(3); // random tile 0, 1, or 2
@@ -74,11 +83,13 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
 
         touchEvents.draw(c);
         // Step 2: Draw the player and other characters (on top of the tiles)
-        c.drawBitmap(GameCharacters.PLAYER.getSprite(playerAnimationIndexY, playerAnimationIndexX), x, y, null);
+        c.drawBitmap(GameCharacters.PLAYER.getSprite(playerAnimationIndexY, playerAnimationIndexX), playerX, playerY, null);
         c.drawBitmap(GameCharacters.GRUNTTWO.getSprite(gruntTwoAnimationIndexY, 0), 800, 500, null);
 
         if (Debug.isDebugMode())
-            Debug.drawDebug(c, x, y, 32 * 10, 48 * 10);
+            Debug.drawDebug(c, playerX, playerY,
+                    GameConstants.Player.FRAME_WIDTH * GameConstants.Player.SCALE_MULTIPLIER,
+                    GameConstants.Player.FRAME_HEIGHT * GameConstants.Player.SCALE_MULTIPLIER);
 
         // Commit the drawing to the screen
         holder.unlockCanvasAndPost(c);
@@ -87,20 +98,27 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
     public void update(double delta) {
         updateAnimation();
 
-        if (moveLeft) {
-            if (x >= 0)
-                x -= 10; // speed
+        // Apply gravity
+        playerVelocityY += GRAVITY;
+        playerY += playerVelocityY;
+
+        // Example ground collision at bottom of screen
+        if (playerY + GameConstants.Player.HEIGHT >= screenHeight) {
+            playerY = screenHeight - GameConstants.Player.HEIGHT;
+            playerVelocityY = 0;
+            isJumping = false;
+        }
+
+        if (moveLeft && playerX >= 0) {
+            playerX -= 10; // speed
 
             //  playerFaceDirection = GameConstants.Facing_Direction.LEFT; // not yet implemented
             //  playerAnimationIndexY = 0; // not yet implemented
-        } else if (moveRight) {
-            int spriteWidth = GameCharacters.PLAYER.getSprite(0, 0).getWidth();
-            if (x + spriteWidth < screenWidth) {
-                x += 10; // speed
+        } else if (moveRight && playerX + GameConstants.Player.WIDTH < screenWidth) {
+            playerX += 10; // speed
 
-                //     playerFaceDirection = GameConstants.Facing_Direction.RIGHT; // not yet implemented
-                //       playerAnimationIndexY = 1; // not yet implemented
-            }
+            //     playerFaceDirection = GameConstants.Facing_Direction.RIGHT; // not yet implemented
+            //       playerAnimationIndexY = 1; // not yet implemented
         }
     }
 
@@ -178,6 +196,13 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
 
     public void setMoveRight(boolean moveRight) {
         this.moveRight = moveRight;
+    }
+
+    public void setJump(boolean moveJump) {
+        if (!isJumping) {
+            playerVelocityY = JUMP_STRENGTH;
+            isJumping = true;
+        }
     }
 
 
