@@ -15,6 +15,7 @@ import androidx.annotation.NonNull;
 
 import com.example.epicpixelplatformershootergame.entities.GameCharacters;
 import com.example.epicpixelplatformershootergame.environments.GameMap;
+import com.example.epicpixelplatformershootergame.environments.MapManager;
 import com.example.epicpixelplatformershootergame.helper.GameConstants;
 import com.example.epicpixelplatformershootergame.inputs.TouchEvents;
 
@@ -26,7 +27,6 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
     private SurfaceHolder holder;
 
     private Random rand = new Random();
-    ;
 
     private GameLoop gameLoop;
     private TouchEvents touchEvents;
@@ -41,12 +41,12 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
     private int animationTick;
     private double animationSpeed = 7.5;
 
-    // Test map
-    private GameMap testMap;
+    // Map
+    private MapManager mapManager;
 
     // Jumping Physics
     private float playerX = 100, playerY = 100;
-    private float playerVelocityY = 0;
+    private float playerVelocityX = 0, playerVelocityY = 0;
     private boolean isJumping = false;
 
     private final float GRAVITY = 0.5f;
@@ -63,27 +63,26 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
         touchEvents = new TouchEvents(this);
 
         gameLoop = new GameLoop(this);
+        mapManager = new MapManager();
 
-        // TESTING MAP
-        int[][] testArrayWithIds = new int[10][GAME_WIDTH / GameConstants.FloorTile.WIDTH]; // adjust to screen without lagging
-        for (int i = 0; i < testArrayWithIds.length; i++) {
-            for (int j = 0; j < testArrayWithIds[i].length; j++) {
-                testArrayWithIds[i][j] = rand.nextInt(3); // random tile 0, 1, or 2
-            }
-        }
-        testMap = new GameMap(testArrayWithIds);
     }
 
     public void render() {
         Canvas c = holder.lockCanvas();
         c.drawColor(Color.BLACK);
 
-        // Step 1: Draw the map tiles (background)
-        testMap.draw(c); // test
+
+        // Step 1: Draw the map tiles (background) with the camera offset
+        mapManager.draw(c);
+
+        mapManager.updateCamera(playerX);
+
 
         touchEvents.draw(c);
+
         // Step 2: Draw the player and other characters (on top of the tiles)
-        c.drawBitmap(GameCharacters.PLAYER.getSprite(playerAnimationIndexY, playerAnimationIndexX), playerX, playerY, null);
+        c.drawBitmap(GameCharacters.PLAYER.getSprite(playerAnimationIndexY, playerAnimationIndexX),
+                playerX, playerY, null);
         c.drawBitmap(GameCharacters.GRUNTTWO.getSprite(gruntTwoAnimationIndexY, 0), 800, 500, null);
 
         if (Debug.isDebugMode())
@@ -102,7 +101,9 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
         playerVelocityY += GRAVITY;
         playerY += playerVelocityY;
 
-        // Example ground collision at bottom of screen
+        // ground collision at bottom of the map
+
+        checkPlayerCollision();
         if (playerY + GameConstants.Player.HEIGHT >= screenHeight) {
             playerY = screenHeight - GameConstants.Player.HEIGHT;
             playerVelocityY = 0;
@@ -205,5 +206,41 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
         }
     }
 
+    public void checkPlayerCollision() {
+        int playerWidth = GameConstants.Player.WIDTH;
+        int playerHeight = GameConstants.Player.HEIGHT;
+        float nextX = playerX + playerVelocityX;
+        float nextY = playerY + playerVelocityY;
+
+        GameMap map = mapManager.getCurrentMap();
+
+        // Horizontal collision
+        if (!map.isSolidTileAt(nextX, playerY) && !map.isSolidTileAt(nextX + playerWidth - 1, playerY)) {
+            playerX = nextX;
+        } else {
+            playerVelocityX = 0; // Stop horizontal movement
+        }
+
+        // Vertical collision detection
+        if (!map.isSolidTileAt(playerX, nextY + playerHeight) &&
+                !map.isSolidTileAt(playerX + playerWidth - 1, nextY + playerHeight)) {
+            playerY = nextY; // No collision, move player down
+        } else {
+            // Find the tile Y position where player is landing
+            int tileY = (int) ((nextY + playerHeight) / GameConstants.FloorTile.HEIGHT);
+
+            // Adjust player Y to land exactly at the bottom of the tile
+            playerY = (int) tileY * GameConstants.FloorTile.HEIGHT - playerHeight;
+
+            // Stop vertical velocity and mark as not jumping
+            playerVelocityY = 0;
+            isJumping = false;
+
+            System.out.println("Player Y before collision: " + playerY);
+            System.out.println("Next Y: " + nextY);
+            System.out.println("Tile Y: " + tileY);
+            System.out.println("Adjusted Player Y: " + playerY);
+        }
+    }
 
 }

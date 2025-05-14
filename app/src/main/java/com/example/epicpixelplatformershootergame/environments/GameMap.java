@@ -8,15 +8,33 @@ public class GameMap {
 
     private int[][] tileIds;
 
-    public GameMap(int [][] tileIds) {
+    public GameMap(int[][] tileIds) {
         this.tileIds = tileIds;
     }
 
-    public void draw (Canvas c) {
-        for (int i = 0; i < tileIds.length; i++) {
-            for (int j = 0; j < tileIds[i].length; j++) {
-                c.drawBitmap(Floor.OUTSIDE.getTile(tileIds[i][j]), j * GameConstants.FloorTile.HEIGHT, i * GameConstants.FloorTile.WIDTH, null);
-            }
+    public int getTileId(int xIndex, int yIndex) {
+        return tileIds[yIndex][xIndex];
+    }
+
+    public int getArrayWidth() {
+        return tileIds[0].length;
+    }
+
+    public int getArrayHeight() {
+        return tileIds.length;
+    }
+
+    public boolean isSolidTileAt(float worldX, float worldY) {
+        int tileX = (int) (worldX / GameConstants.FloorTile.WIDTH);
+        int tileY = (int) (worldY / GameConstants.FloorTile.HEIGHT);
+
+        // Prevent out-of-bounds crashes
+        if (tileX < 0 || tileY < 0 || tileX >= getArrayWidth() || tileY >= getArrayHeight()) {
+            return false;
         }
+
+        // Check for a solid tile (non-zero tileId means solid)
+        int tileId = tileIds[tileY][tileX];
+        return tileId != 0;
     }
 }

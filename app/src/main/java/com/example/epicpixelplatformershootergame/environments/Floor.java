@@ -10,7 +10,7 @@ import com.example.epicpixelplatformershootergame.helper.interfaces.BitmapMethod
 
 public enum Floor implements BitmapMethods {
 
-    OUTSIDE(R.drawable.tilesetfloorsand, 3, 1);
+    OUTSIDE(R.drawable.tilesetfloorsand, 4, 1);
 
     private Bitmap[] tiles;
 
@@ -20,18 +20,27 @@ public enum Floor implements BitmapMethods {
         tiles = new Bitmap[tilesInHeight * tilesInWidth];
         Bitmap tileSheet = BitmapFactory.decodeResource(MainActivity.getGameContext().getResources(), resId, options);
 
-        // i: Row, j: Column
+        int baseWidth = GameConstants.FloorTile.BASE_WIDTH;
+        int baseHeight = GameConstants.FloorTile.BASE_HEIGHT;
+
         for (int i = 0; i < tilesInHeight; i++) {
             for (int j = 0; j < tilesInWidth; j++) {
                 int index = i * tilesInWidth + j;
-                Bitmap floorBitmap = Bitmap.createBitmap(tileSheet, j * GameConstants.FloorTile.WIDTH, i * GameConstants.FloorTile.HEIGHT,
-                        GameConstants.FloorTile.WIDTH, GameConstants.FloorTile.HEIGHT);
-                tiles[index] = getScaledBitmap(floorBitmap, GameConstants.FloorTile.SCALE_MULTIPLIER);
+
+                // Slice from raw tileSheet
+                Bitmap tile = Bitmap.createBitmap(tileSheet, j * baseWidth, i * baseHeight, baseWidth, baseHeight);
+
+                // Scale
+                tiles[index] = getScaledBitmap(tile, GameConstants.FloorTile.SCALE_MULTIPLIER);
             }
         }
     }
 
+
     public Bitmap getTile(int id) {
+        if (id < 0 || id >= tiles.length) {
+            return tiles[0]; // default/fallback tile
+        }
         return tiles[id];
     }
 }
