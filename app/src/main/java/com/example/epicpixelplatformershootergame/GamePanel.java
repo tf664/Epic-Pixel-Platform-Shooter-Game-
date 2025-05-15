@@ -86,8 +86,7 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
 
         c.drawBitmap(
                 GameCharacters.PLAYER.getSprite(playerAnimationIndexY, playerAnimationIndexX),
-                playerX - cameraX, playerY + mapOffsetY, // <-- Subtract cameraX from playerX
-                null
+                playerX - cameraX, playerY + mapOffsetY, null
         );
 
         if (Debug.isDebugMode())
@@ -130,14 +129,14 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
         float nextX = playerX + playerVelocityX;
         float nextY = playerY + playerVelocityY;
 
-        // Clamp nextX to map bounds before collision
+        // Clamp player's nextX to map bounds before collision
         int mapPixelWidth = mapManager.getCurrentMap().getArrayWidth() * GameConstants.FloorTile.WIDTH;
         nextX = Math.max(0, Math.min(nextX, mapPixelWidth - GameConstants.Player.WIDTH));
 
         // Handle collisions based on predicted position
         checkPlayerCollision(nextX, nextY);
 
-        // Update camera after player position is finalized
+        // Update camera after finalized player position
         mapManager.updateCamera(playerX);
 
         // Clamp vertical position to screen
@@ -172,7 +171,7 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
             }
 
 
-            // not yet implemented
+            // TODO: not yet implemented
 //            if (playerFaceDirection == GameConstants.Facing_Direction.LEFT) {
 //                playerAnimationIndexY = 0;
 //            } else if (playerFaceDirection == GameConstants.Facing_Direction.RIGHT) {
@@ -294,8 +293,10 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
 
     @Override
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
-        super.onSizeChanged(w, h, oldw, oldh);
-        screenWidth = w;
-        screenHeight = h;
+            super.onSizeChanged(w, h, oldw, oldh);
+            screenWidth = w;
+            screenHeight = h;
+            mapManager.setScreenSize(w, h);
+        }
     }
-}
+

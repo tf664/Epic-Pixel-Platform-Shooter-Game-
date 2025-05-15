@@ -29,7 +29,6 @@ public enum Floor implements BitmapMethods {
 
                 // Slice from raw tileSheet
                 Bitmap tile = Bitmap.createBitmap(tileSheet, j * baseWidth, i * baseHeight, baseWidth, baseHeight);
-
                 // Scale
                 tiles[index] = getScaledBitmap(tile, GameConstants.FloorTile.SCALE_MULTIPLIER);
             }
@@ -38,9 +37,9 @@ public enum Floor implements BitmapMethods {
 
 
     public Bitmap getTile(int id) {
-        if (id < 0 || id >= tiles.length) {
-            return tiles[0]; // default/fallback tile
-        }
+        if (id < 0 || id >= tiles.length)
+            return tiles[0]; // fallback tile
+
         return tiles[id];
     }
 }
