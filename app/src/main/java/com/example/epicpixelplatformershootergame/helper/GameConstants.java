@@ -1,5 +1,8 @@
 package com.example.epicpixelplatformershootergame.helper;
 
+import android.graphics.Color;
+import android.graphics.Paint;
+
 import com.example.epicpixelplatformershootergame.Debug;
 
 /**
@@ -11,7 +14,7 @@ public final class GameConstants {
      * Sets debug mode
      */
     public static final class DebugMode {
-        public static final boolean debugMode = true;
+        public static final boolean debugMode = false;
     }
 
     /**
@@ -48,7 +51,22 @@ public final class GameConstants {
     public static final class GruntTwo {
         public static final int WIDTH = 105;
         public static final int HEIGHT = 41;
-        public static final int SCALE_MULTIPLIER = 5; // adjust visually
+        public static final int SCALE_MULTIPLIER = 6;
+    }
+
+    public static final class Button {
+        public static final int radius = 100;
+
+    }
+
+    public static final class Map {
+        // 0 air, 1 sandfloor, 2 sandfloor, 3 sandfloor, 4,
+        public static final int[][] tileIds = {
+                {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+                {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0},
+                {0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 1, 0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+                {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 3, 3, 3, 3, 3, 1, 1, 1, 1, 1, 1, 1, 1}
+        };
     }
 }
 

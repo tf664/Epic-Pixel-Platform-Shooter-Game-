@@ -50,7 +50,7 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
     private MapManager mapManager;
     private Bitmap background_back;
     private Bitmap background_front;
-    private List<Rect> collisionRects = new ArrayList<>();
+    private Bitmap cachedBackground;
 
     // Jumping Physics
     private float playerX = 100, playerY = 100;
@@ -60,64 +60,64 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
     private final float GRAVITY = 0.5f;
     private final float JUMP_STRENGTH = -16;
 
+    private final List<Rect> collisionRects = new ArrayList<>();
 
     public GamePanel(Context context) {
         super(context);
         Debug.setDebugMode(GameConstants.DebugMode.debugMode);
 
-        holder = getHolder();
-        holder.addCallback(this);
+        setZOrderOnTop(true);
+        getHolder().setFormat(android.graphics.PixelFormat.TRANSPARENT);
+        getHolder().addCallback(this);
+        loadBackgrounds(context);
+
         redPaint.setColor(Color.RED);
         touchEvents = new TouchEvents(this);
-
-        background_back = BitmapFactory.decodeResource(getResources(), R.drawable.background_back);
-        background_back = Bitmap.createScaledBitmap(background_back, GAME_WIDTH, GAME_HEIGHT, true);
-        background_front = BitmapFactory.decodeResource(getResources(), R.drawable.background_front);
-        background_front = Bitmap.createScaledBitmap(background_back, GAME_WIDTH, GAME_HEIGHT, true);
-
 
         gameLoop = new GameLoop(this);
         mapManager = new MapManager();
     }
 
     public void render() {
-        Canvas c = holder.lockCanvas();
+        SurfaceHolder surfaceHolder = getHolder();
+        Canvas c = surfaceHolder.lockCanvas();
+        if (c == null) return;
+
         c.drawColor(Color.BLACK);
         c.drawBitmap(background_back, 0, 0, null);
-        c.drawBitmap(background_front, 0, 0, null);
+        // background_front scroll
+        if (background_front != null) {
+            int cameraX = mapManager.getCameraX();
+            int bgWidth = background_front.getWidth();
+            int offset = cameraX % bgWidth;
+
+            for (int x = -offset; x < getWidth(); x += bgWidth)
+                c.drawBitmap(background_front, x, 0, null);
+        }
 
         mapManager.updateCamera(playerX);
         mapManager.draw(c);
 
-        touchEvents.draw(c);
-
-        // Step 2: Draw the player and other characters (on top of the tiles)
         int mapOffsetY = mapManager.getMapOffsetY();
         int cameraX = mapManager.getCameraX();
 
-        c.drawBitmap(
-                GameCharacters.PLAYER.getSprite(playerAnimationIndexY, playerAnimationIndexX),
-                playerX - cameraX, playerY + mapOffsetY, null
-        );
+        c.drawBitmap(GameCharacters.PLAYER.getSprite(playerAnimationIndexY, playerAnimationIndexX),
+                playerX - cameraX, playerY + mapOffsetY, null);
 
-        if (Debug.isDebugMode())
-            Debug.drawDebug(c, playerX - cameraX, playerY + mapOffsetY,
-                    GameConstants.Player.FRAME_WIDTH * GameConstants.Player.SCALE_MULTIPLIER,
-                    GameConstants.Player.FRAME_HEIGHT * GameConstants.Player.SCALE_MULTIPLIER);
+        c.drawBitmap(GameCharacters.GRUNTTWO.getSprite(gruntTwoAnimationIndexY, 0), 800, 600, null);
 
-        // TODO move to debug.java
+        // Buttons
+        touchEvents.draw(c);
+
         if (Debug.isDebugMode()) {
-            Paint bluePaint = new Paint();
-            bluePaint.setStyle(Paint.Style.STROKE);
-            bluePaint.setColor(Color.BLUE);
-            bluePaint.setStrokeWidth(5);
-            for (Rect r : collisionRects) {
-                c.drawRect(r, bluePaint);
-            }
+            Debug.drawDebugPlayer(c, playerX - cameraX, playerY + mapOffsetY,
+                    (float) (GameConstants.Player.FRAME_WIDTH * GameConstants.Player.SCALE_MULTIPLIER),
+                    (float) (GameConstants.Player.FRAME_HEIGHT * GameConstants.Player.SCALE_MULTIPLIER));
+            Debug.drawDebugMap(c, collisionRects);
+
         }
 
-        // Commit the drawing to the screen
-        holder.unlockCanvasAndPost(c);
+        surfaceHolder.unlockCanvasAndPost(c);
     }
 
     public void update(double delta) {
@@ -218,8 +218,8 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
         int playerWidth = GameConstants.Player.WIDTH;
         int playerHeight = GameConstants.Player.HEIGHT;
 
-        // Store collision tiles for debug
-        List<Rect> collisionRects = new ArrayList<>();
+        if (Debug.isDebugMode())
+            collisionRects.clear();
 
         // --- Horizontal Collision ---
         boolean canMoveHorizontally = true;
@@ -266,9 +266,6 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
             playerVelocityY = 0;
             isJumping = false;
         }
-
-        // Store for debug drawing
-        this.collisionRects = collisionRects;
     }
 
     // Helper to get the rectangle of a tile at a world position
@@ -281,7 +278,6 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
         int drawY = tileY * tileHeight + mapManager.getMapOffsetY(); // <-- Correct
         return new Rect(drawX, drawY, drawX + tileWidth, drawY + tileHeight);
     }
-
 
 
     @Override
@@ -305,10 +301,19 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
 
     @Override
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
-            super.onSizeChanged(w, h, oldw, oldh);
-            screenWidth = w;
-            screenHeight = h;
-            mapManager.setScreenSize(w, h);
-        }
+        super.onSizeChanged(w, h, oldw, oldh);
+        screenWidth = w;
+        screenHeight = h;
+        mapManager.setScreenSize(w, h);
     }
+
+    private void loadBackgrounds(Context context) {
+        BitmapFactory.Options options = new BitmapFactory.Options();
+        options.inPreferredConfig = Bitmap.Config.RGB_565;
+        background_back = BitmapFactory.decodeResource(context.getResources(), R.drawable.background_back, options);
+        background_back = Bitmap.createScaledBitmap(background_back, GAME_WIDTH, GAME_HEIGHT, true);
+        background_front = BitmapFactory.decodeResource(context.getResources(), R.drawable.background_front, options);
+        background_front = Bitmap.createScaledBitmap(background_front, GAME_WIDTH, GAME_HEIGHT, true);
+    }
+}
 

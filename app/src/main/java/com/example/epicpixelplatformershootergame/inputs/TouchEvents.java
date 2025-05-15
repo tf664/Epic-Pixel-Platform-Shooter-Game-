@@ -6,34 +6,35 @@ import android.graphics.Paint;
 import android.view.MotionEvent;
 
 import com.example.epicpixelplatformershootergame.GamePanel;
+import com.example.epicpixelplatformershootergame.helper.GameConstants;
 
 public class TouchEvents {
     private GamePanel gamePanel;
 
-    private float xCenterLeft = 150, yCenterLeft = 800;
+    private float xCenterLeft = 200, yCenterLeft = 800;
     private float xCenterRight = 500, yCenterRight = 800;
-    private float radius = 100;
-    private Paint circlePaint;
 
+    private Paint circlePaint;
     private Paint jumpPaint;
+
     private float xCenterJump = 1800, yCenterJump = 800;
 
     private boolean isJumping = false;  // To track whether the jump button was touched
 
     public TouchEvents(GamePanel gamePanel) {
         this.gamePanel = gamePanel;
+
         circlePaint = new Paint();
         circlePaint.setColor(Color.RED);
-
         jumpPaint = new Paint();
         jumpPaint.setColor(Color.BLUE);
     }
 
     public void draw(Canvas c) {
-        c.drawCircle(xCenterLeft, yCenterLeft, radius, circlePaint);
-        c.drawCircle(xCenterRight, yCenterRight, radius, circlePaint);
+        c.drawCircle(xCenterLeft, yCenterLeft, GameConstants.Button.radius, circlePaint);
+        c.drawCircle(xCenterRight, yCenterRight, GameConstants.Button.radius, circlePaint);
 
-        c.drawCircle(xCenterJump, yCenterJump, radius, jumpPaint);
+        c.drawCircle(xCenterJump, yCenterJump, GameConstants.Button.radius, jumpPaint);
     }
 
     public boolean touchEvent(MotionEvent event) {
@@ -65,16 +66,16 @@ public class TouchEvents {
                 gamePanel.setMoveLeft(false);
                 gamePanel.setMoveRight(false);
 
-                // Only move if the touch is within the left or right button
-                if (isWithin(xMove, yMove, xCenterLeft, yCenterLeft, radius)) {
+                // Move left button
+                if (isWithin(xMove, yMove, xCenterLeft, yCenterLeft, GameConstants.Button.radius)) {
                     gamePanel.setMoveLeft(true);
                 }
-                if (isWithin(xMove, yMove, xCenterRight, yCenterRight, radius)) {
+                // Move right button
+                if (isWithin(xMove, yMove, xCenterRight, yCenterRight, GameConstants.Button.radius)) {
                     gamePanel.setMoveRight(true);
                 }
-
-                // Handle jump logic - only initiate jump if the finger is on the jump button
-                if (isWithin(xMove, yMove, xCenterJump, yCenterJump, radius) && !isJumping) {
+                // Jump button
+                if (isWithin(xMove, yMove, xCenterJump, yCenterJump, GameConstants.Button.radius) && !isJumping) {
                     gamePanel.setJump(true);  // Trigger jump action
                 }
                 break;
@@ -83,22 +84,22 @@ public class TouchEvents {
     }
 
     private void handleTouchDown(float x, float y) {
-        if (isWithin(x, y, xCenterRight, yCenterRight, radius)) {
+        if (isWithin(x, y, xCenterRight, yCenterRight, GameConstants.Button.radius)) {
             gamePanel.setMoveRight(true);
-        } else if (isWithin(x, y, xCenterLeft, yCenterLeft, radius)) {
+        } else if (isWithin(x, y, xCenterLeft, yCenterLeft, GameConstants.Button.radius)) {
             gamePanel.setMoveLeft(true);
-        } else if (isWithin(x, y, xCenterJump, yCenterJump, radius)) {
+        } else if (isWithin(x, y, xCenterJump, yCenterJump, GameConstants.Button.radius)) {
             gamePanel.setJump(true);
             isJumping = true;  // Mark that jump has been initiated
         }
     }
 
     private void handleTouchUp(float x, float y) {
-        if (isWithin(x, y, xCenterRight, yCenterRight, radius)) {
+        if (isWithin(x, y, xCenterRight, yCenterRight, GameConstants.Button.radius)) {
             gamePanel.setMoveRight(false);
-        } else if (isWithin(x, y, xCenterLeft, yCenterLeft, radius)) {
+        } else if (isWithin(x, y, xCenterLeft, yCenterLeft, GameConstants.Button.radius)) {
             gamePanel.setMoveLeft(false);
-        } else if (isWithin(x, y, xCenterJump, yCenterJump, radius)) {
+        } else if (isWithin(x, y, xCenterJump, yCenterJump, GameConstants.Button.radius)) {
             gamePanel.setJump(false);
             isJumping = false;  // Reset jump state after release
         }

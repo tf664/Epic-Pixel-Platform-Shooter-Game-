@@ -1,8 +1,6 @@
 package com.example.epicpixelplatformershootergame.environments;
 
 import android.graphics.Canvas;
-import android.graphics.Color;
-import android.graphics.Paint;
 
 import com.example.epicpixelplatformershootergame.helper.GameConstants;
 
@@ -15,17 +13,11 @@ public class MapManager {
     private int cameraX = 0;  // Camera's horizontal offset
 
     public MapManager() {
-        initTestMap();
+        initMainMap();
     }
 
-    private void initTestMap() {
-        int[][] tileIds = {
-                {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-                {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0},
-                {0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 1, 0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-                {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 3, 3, 3, 3, 3, 1, 1, 1, 1, 1, 1, 1, 1}
-        };
-        currentMap = new GameMap(tileIds);
+    private void initMainMap() {
+        currentMap = new GameMap(GameConstants.Map.tileIds);
 
         mapWidth = currentMap.getArrayWidth() * GameConstants.FloorTile.WIDTH;
     }
@@ -35,14 +27,14 @@ public class MapManager {
         int tileHeight = GameConstants.FloorTile.HEIGHT;
 
         int startTileX = Math.max(0, cameraX / tileWidth);
-        int endTileX = Math.min(currentMap.getArrayWidth(), startTileX + (screenWidth / tileWidth) + 8);
+        int tilesOnScreen = (screenWidth / tileWidth) + 2; // + int loading buffer ahead
+        int endTileX = Math.min(currentMap.getArrayWidth(), startTileX + tilesOnScreen);
 
-        int totalMapHeight = currentMap.getArrayHeight() * tileHeight;
-        int verticalOffset = (screenHeight - totalMapHeight) / 2;
 
         for (int i = 0; i < currentMap.getArrayHeight(); i++) {
             for (int j = startTileX; j < endTileX; j++) {
                 int tileId = currentMap.getTileId(j, i);
+
                 if (tileId == 0)
                     continue;
 

@@ -5,9 +5,7 @@ import android.graphics.Canvas;
 import com.example.epicpixelplatformershootergame.helper.GameConstants;
 
 public class GameMap {
-
     private int[][] tileIds;
-    MapManager mapManager;
 
     public GameMap(int[][] tileIds) {
         this.tileIds = tileIds;
@@ -27,13 +25,13 @@ public class GameMap {
 
     public boolean isSolidTileAt(float worldX, float worldY) {
         // Remove the vertical offset before converting to tile coordinates
-
         int tileX = (int) (worldX / GameConstants.FloorTile.WIDTH);
         int tileY = (int) (worldY / GameConstants.FloorTile.HEIGHT);
 
         if (tileX < 0 || tileY < 0 || tileX >= getArrayWidth() || tileY >= getArrayHeight())
             return false;
 
+        // Excludes air (0) tile from collision
         return tileIds[tileY][tileX] != 0;
     }
 }
