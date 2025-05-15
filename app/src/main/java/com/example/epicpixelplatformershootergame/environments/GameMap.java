@@ -25,12 +25,11 @@ public class GameMap {
         return tileIds.length;
     }
 
-    public boolean isSolidTileAt(float worldX, float worldY, int mapOffsetY) {
+    public boolean isSolidTileAt(float worldX, float worldY) {
         // Remove the vertical offset before converting to tile coordinates
-        float adjustedY = worldY - mapOffsetY;
 
         int tileX = (int) (worldX / GameConstants.FloorTile.WIDTH);
-        int tileY = (int) (adjustedY / GameConstants.FloorTile.HEIGHT);
+        int tileY = (int) (worldY / GameConstants.FloorTile.HEIGHT);
 
         if (tileX < 0 || tileY < 0 || tileX >= getArrayWidth() || tileY >= getArrayHeight())
             return false;
