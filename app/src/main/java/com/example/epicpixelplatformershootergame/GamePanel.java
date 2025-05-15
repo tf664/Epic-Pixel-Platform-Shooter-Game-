@@ -4,6 +4,8 @@ import static com.example.epicpixelplatformershootergame.MainActivity.GAME_HEIGH
 import static com.example.epicpixelplatformershootergame.MainActivity.GAME_WIDTH;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
@@ -46,6 +48,8 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
 
     // Map
     private MapManager mapManager;
+    private Bitmap background_back;
+    private Bitmap background_front;
     private List<Rect> collisionRects = new ArrayList<>();
 
     // Jumping Physics
@@ -66,14 +70,21 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
         redPaint.setColor(Color.RED);
         touchEvents = new TouchEvents(this);
 
+        background_back = BitmapFactory.decodeResource(getResources(), R.drawable.background_back);
+        background_back = Bitmap.createScaledBitmap(background_back, GAME_WIDTH, GAME_HEIGHT, true);
+        background_front = BitmapFactory.decodeResource(getResources(), R.drawable.background_front);
+        background_front = Bitmap.createScaledBitmap(background_back, GAME_WIDTH, GAME_HEIGHT, true);
+
+
         gameLoop = new GameLoop(this);
         mapManager = new MapManager();
-
     }
 
     public void render() {
         Canvas c = holder.lockCanvas();
         c.drawColor(Color.BLACK);
+        c.drawBitmap(background_back, 0, 0, null);
+        c.drawBitmap(background_front, 0, 0, null);
 
         mapManager.updateCamera(playerX);
         mapManager.draw(c);
@@ -94,6 +105,7 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
                     GameConstants.Player.FRAME_WIDTH * GameConstants.Player.SCALE_MULTIPLIER,
                     GameConstants.Player.FRAME_HEIGHT * GameConstants.Player.SCALE_MULTIPLIER);
 
+        // TODO move to debug.java
         if (Debug.isDebugMode()) {
             Paint bluePaint = new Paint();
             bluePaint.setStyle(Paint.Style.STROKE);

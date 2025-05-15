@@ -13,8 +13,7 @@ public enum GameCharacters implements BitmapMethods {
     PLAYER(R.drawable.player_spritesheet_walking, 32, 48),
     GRUNTTWO(R.drawable.grunttwo_spritesheet_shooting, 105, 41);
 
-    private int boxWidth;
-    private int boxHeight;
+    private int boxWidth, boxHeight;
 
     private Bitmap spriteSheet;
     private Bitmap[][] sprites;
