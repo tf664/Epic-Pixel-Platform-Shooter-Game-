@@ -95,6 +95,7 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
                 c.drawBitmap(background_front, x, 0, null);
         }
 
+        // Camera and Map
         mapManager.updateCamera(playerX);
         mapManager.draw(c);
 

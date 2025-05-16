@@ -30,13 +30,11 @@ public class MapManager {
         int tilesOnScreen = (screenWidth / tileWidth) + 2; // + int loading buffer ahead
         int endTileX = Math.min(currentMap.getArrayWidth(), startTileX + tilesOnScreen);
 
-
         for (int i = 0; i < currentMap.getArrayHeight(); i++) {
             for (int j = startTileX; j < endTileX; j++) {
                 int tileId = currentMap.getTileId(j, i);
 
-                if (tileId == 0)
-                    continue;
+                if (tileId == 0) continue;
 
                 int drawX = (j * tileWidth) - cameraX;
                 int mapOffsetY = screenHeight - (currentMap.getArrayHeight() * tileHeight);
