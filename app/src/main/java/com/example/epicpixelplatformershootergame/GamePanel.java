@@ -40,7 +40,6 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
     private int gruntTwoAnimationIndexY;
 
     private boolean moveLeft = false, moveRight = false;
-    private int screenWidth, screenHeight;
     private int animationFrame;
 
     private int animationTick;
@@ -153,8 +152,8 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
         mapManager.updateCamera(playerX);
 
         // Clamp vertical position to screen
-        if (playerY + GameConstants.Player.HEIGHT >= screenHeight) {
-            playerY = screenHeight - GameConstants.Player.HEIGHT;
+        if (playerY + GameConstants.Player.HEIGHT >= GameConstants.Screen.screenHeight) {
+            playerY = GameConstants.Screen.screenHeight - GameConstants.Player.HEIGHT;
             playerVelocityY = 0;
             isJumping = false;
         }
@@ -288,6 +287,8 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
 
     @Override
     public void surfaceCreated(@NonNull SurfaceHolder surfaceHolder) {
+        GameConstants.Screen.screenWidth = getWidth();
+        GameConstants.Screen.screenHeight = getHeight();
         gameLoop.startGameLoop();
     }
 
@@ -303,16 +304,34 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
     @Override
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
         super.onSizeChanged(w, h, oldw, oldh);
-        screenWidth = w;
-        screenHeight = h;
-        mapManager.setScreenSize(w, h);
+
+        GameConstants.Screen.screenWidth = w;
+        GameConstants.Screen.screenHeight = h;
+
+        GameConstants.Camera.leftThreshold = w / 3;
+        GameConstants.Camera.rightThreshold = w * 2 / 3;
+
+        int mapRows = mapManager.getCurrentMap().getArrayHeight();
+        int scale = h / (mapRows * GameConstants.FloorTile.BASE_HEIGHT);
+        if (scale < 1) scale = 1;
+
+        GameConstants.FloorTile.SCALE_MULTIPLIER = scale;
+        GameConstants.FloorTile.WIDTH = GameConstants.FloorTile.BASE_WIDTH * scale;
+        GameConstants.FloorTile.HEIGHT = GameConstants.FloorTile.BASE_HEIGHT * scale;
+
+        mapManager.updateScreenSize(w, h);
+
+        if (background_back != null) {
+            background_back = Bitmap.createScaledBitmap(background_back, w, h, true);
+        }
     }
 
     private void loadBackgrounds(Context context) {
         BitmapFactory.Options options = new BitmapFactory.Options();
         options.inPreferredConfig = Bitmap.Config.RGB_565;
         background_back = BitmapFactory.decodeResource(context.getResources(), R.drawable.background_back, options);
-        background_back = Bitmap.createScaledBitmap(background_back, GAME_WIDTH, GAME_HEIGHT, true);
+        background_back = Bitmap.createScaledBitmap(background_back, GameConstants.Screen.screenWidth,
+                GameConstants.Screen.screenHeight, true);
         background_front = BitmapFactory.decodeResource(context.getResources(), R.drawable.background_front, options);
         background_front = Bitmap.createScaledBitmap(background_front, GAME_WIDTH, GAME_HEIGHT, true);
     }

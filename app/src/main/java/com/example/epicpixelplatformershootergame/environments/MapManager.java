@@ -6,8 +6,8 @@ import com.example.epicpixelplatformershootergame.helper.GameConstants;
 
 public class MapManager {
     private GameMap currentMap;
-    private int screenWidth;
-    private int screenHeight;
+    private int screenWidth = GameConstants.Screen.screenWidth;
+    private int screenHeight = GameConstants.Screen.screenHeight;
     private int mapWidth;
     // Initial position of the camera (it starts in the middle of the screen)
     private int cameraX = 0;  // Camera's horizontal offset
@@ -47,15 +47,17 @@ public class MapManager {
 
     // Update the camera position based on player position
     public void updateCamera(float playerX) {
-        int leftThreshold = screenWidth / 3;
-        int rightThreshold = screenWidth * 2 / 3;
-
         int playerScreenX = (int) playerX - cameraX;
 
-        if (playerScreenX < leftThreshold) {
-            cameraX = (int) playerX - leftThreshold;
-        } else if (playerScreenX > rightThreshold) {
-            cameraX = (int) playerX - rightThreshold;
+        System.out.println("The playerScreenX: " + playerScreenX);
+        System.out.println("playerX " + playerX);
+        System.out.println("Threshold: " + GameConstants.Camera.leftThreshold + " " + GameConstants.Camera.rightThreshold);
+        System.out.println("Screen dimension: " + GameConstants.Screen.screenHeight + " and " + GameConstants.Screen.screenWidth);
+
+        if (playerScreenX < GameConstants.Camera.leftThreshold) {
+            cameraX = (int) playerX - GameConstants.Camera.leftThreshold;
+        } else if (playerScreenX > GameConstants.Camera.rightThreshold) {
+          cameraX = (int) playerX - GameConstants.Camera.rightThreshold;
         }
 
         // Clamp cameraX within map bounds
@@ -79,9 +81,9 @@ public class MapManager {
         return screenHeight - (currentMap.getArrayHeight() * GameConstants.FloorTile.HEIGHT);
     }
 
-    public void setScreenSize(int width, int height) {
-        this.screenWidth = width;
-        this.screenHeight = height;
+    public void updateScreenSize(int w, int h) {
+        this.screenWidth = w;
+        this.screenHeight = h;
+        this.mapWidth = currentMap.getArrayWidth() * GameConstants.FloorTile.WIDTH;
     }
-
 }

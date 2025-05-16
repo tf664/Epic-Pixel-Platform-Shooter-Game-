@@ -1,5 +1,6 @@
 package com.example.epicpixelplatformershootergame.helper;
 
+import android.content.res.Resources;
 import android.graphics.Color;
 import android.graphics.Paint;
 
@@ -17,6 +18,16 @@ public final class GameConstants {
         public static final boolean debugMode = false;
     }
 
+    public static final class Screen {
+            public static int screenWidth = Resources.getSystem().getDisplayMetrics().widthPixels;
+            public static int screenHeight = Resources.getSystem().getDisplayMetrics().heightPixels;
+    }
+
+    public static final class Camera {
+        public static int leftThreshold = Screen.screenWidth / 3;
+        public static int  rightThreshold = Screen.screenWidth * 2 / 3;
+    }
+
     /**
      * Provides better readability and logical understanding when using character sprite sheet
      */
@@ -32,12 +43,9 @@ public final class GameConstants {
     public static final class FloorTile {
         public static final int BASE_WIDTH = 32;
         public static final int BASE_HEIGHT = 32;
-      //  public static final int SCALE_MULTIPLIER = 7;
-     //   public int mapRows = currentMap.getArrayHeight();
-       // public float scale = (float) screenHeight / (mapRows * GameConstants.FloorTile.BASE_HEIGHT);
-        public static final int SCALE_MULTIPLIER = 1080 / ( BASE_HEIGHT * 5); // int should be amount of rows on map
-        public static final int WIDTH = BASE_WIDTH * SCALE_MULTIPLIER;
-        public static final int HEIGHT = BASE_HEIGHT * SCALE_MULTIPLIER;
+        public static int SCALE_MULTIPLIER = 1;
+        public static int WIDTH = BASE_WIDTH;
+        public static int HEIGHT = BASE_HEIGHT;
     }
 
     public static final class Player {
@@ -62,13 +70,14 @@ public final class GameConstants {
     public static final class Map {
         // 0 air, 1 sandfloor, 2 sandfloor, 3 sandfloor, 4,
         public static final int[][] tileIds = {
-                {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-                {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0},
-                {0, 0, 43, 3, 0, 0, 0, 0, 0, 0, 0, 1, 0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-                {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 3, 3, 3, 3, 3, 1, 1, 1, 1, 1, 1, 1, 1}
+                {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 18, 19, 20, 0, 0, 0, 0, 0, 0},
+                {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 25, 26, 27, 0, 0, 0, 0, 0, 0},
+                {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 2, 0, 0, 32, 33, 34, 0, 0, 0, 0, 0, 0},
+                {0, 0, 0, 3, 0, 0, 0, 35, 36, 0, 1, 0, 3, 0, 0, 0, 0, 0, 39, 40, 41, 0, 0, 0, 0, 0, 0, 0},
+                {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 3, 3, 3, 3, 3, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0}
         };
     }
 }
 
-//reference the correct tile ID The tile ID is the index in the 1D array: id = row * tilesInWidth + column (rows and columns start at 0, top-left tile is id 0).
+//tile id = row * tilesInWidth + column (rows and columns start at 0, top-left tile is id 0).
 
