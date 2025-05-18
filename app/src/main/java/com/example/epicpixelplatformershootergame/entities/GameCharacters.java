@@ -14,10 +14,8 @@ public enum GameCharacters implements BitmapMethods {
     GRUNTTWO(R.drawable.grunttwo_spritesheet_shooting, 105, 41);
 
     private int boxWidth, boxHeight;
-
     private Bitmap spriteSheet;
     private Bitmap[][] sprites;
-
 
     GameCharacters(int resId, int boxWidth, int boxHeight) {
         this.boxWidth = boxWidth;

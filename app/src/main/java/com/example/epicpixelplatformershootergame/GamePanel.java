@@ -159,50 +159,56 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
         }
     }
 
-
     private void updateAnimation() {
         animationTick++;
 
         if (animationTick >= animationSpeed) {
             animationTick = 0;
 
-            if (moveLeft || moveRight) {
-                animationFrame = (animationFrame + 1) % 4;
+            if (moveRight) {
+                playerFaceDirection = GameConstants.Facing_Direction.RIGHT;
+                // Walking right animation sequence
+                int[] rightAnimY = {0, 0, 0, 1}; // rows
+                int[] rightAnimX = {1, 2, 3, 0}; // columns
 
-                if (animationFrame < 3) {
-                    playerAnimationIndexY = 0;
-                    playerAnimationIndexX = animationFrame + 1; // X = 1 to 3
-                } else {
-                    playerAnimationIndexY = 1;
-                    playerAnimationIndexX = 0;
-                }
-            } else {
-                animationFrame = 0;
-                playerAnimationIndexX = 0;
+                animationFrame = (animationFrame + 1) % rightAnimX.length;
+                playerAnimationIndexY = rightAnimY[animationFrame];
+                playerAnimationIndexX = rightAnimX[animationFrame];
+            } else if (moveLeft) {
+                playerFaceDirection = GameConstants.Facing_Direction.LEFT;
+                // Walking left animation sequence
+                int[] leftAnimY = {1, 1, 2, 2}; // rows
+                int[] leftAnimX = {2, 3, 0, 1}; // columns
+
+                animationFrame = (animationFrame + 1) % leftAnimX.length;
+                playerAnimationIndexY = leftAnimY[animationFrame];
+                playerAnimationIndexX = leftAnimX[animationFrame];
+                // Standing
+            } else if (playerFaceDirection == GameConstants.Facing_Direction.RIGHT) {
                 playerAnimationIndexY = 0;
-            }
+                playerAnimationIndexX = 0;
+            } else {
+                playerAnimationIndexY = 1;
+                playerAnimationIndexX = 1;
 
 
-            // TODO: not yet implemented
-//            if (playerFaceDirection == GameConstants.Facing_Direction.LEFT) {
-//                playerAnimationIndexY = 0;
-//            } else if (playerFaceDirection == GameConstants.Facing_Direction.RIGHT) {
-//                playerAnimationIndexY = 1;
-
-            gruntTwoAnimationIndexY++;
-
-            if (gruntTwoAnimationIndexY >= 58) {
-                gruntTwoAnimationIndexY = 0;
+                // GruntTwo animation
+                gruntTwoAnimationIndexY++;
+                if (gruntTwoAnimationIndexY >= 58) {
+                    gruntTwoAnimationIndexY = 0;
+                }
             }
         }
     }
 
     public void setMoveLeft(boolean moveLeft) {
         this.moveLeft = moveLeft;
+        playerFaceDirection = GameConstants.Facing_Direction.LEFT;
     }
 
     public void setMoveRight(boolean moveRight) {
         this.moveRight = moveRight;
+        playerFaceDirection = GameConstants.Facing_Direction.RIGHT;
     }
 
     public void setJump(boolean moveJump) {
