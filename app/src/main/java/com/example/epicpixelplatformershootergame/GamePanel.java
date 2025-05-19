@@ -17,22 +17,17 @@ import android.view.SurfaceView;
 import androidx.annotation.NonNull;
 
 import com.example.epicpixelplatformershootergame.entities.GameCharacters;
-import com.example.epicpixelplatformershootergame.environments.GameMap;
 import com.example.epicpixelplatformershootergame.environments.MapManager;
 import com.example.epicpixelplatformershootergame.helper.GameConstants;
 import com.example.epicpixelplatformershootergame.inputs.TouchEvents;
+import com.example.epicpixelplatformershootergame.physics.PlayerCollisionHandler;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
 
 public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
-    private Paint redPaint = new Paint();
-    private SurfaceHolder holder;
-
-    private Random rand = new Random();
-
+    private Paint redPaint = new Paint(); // change
     private GameLoop gameLoop;
     private TouchEvents touchEvents;
 
@@ -49,7 +44,6 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
     private MapManager mapManager;
     private Bitmap background_back;
     private Bitmap background_front;
-    private Bitmap cachedBackground;
 
     // Jumping Physics
     private float playerX = 100, playerY = 100;
@@ -60,6 +54,7 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
     private final float JUMP_STRENGTH = -16;
 
     private final List<Rect> collisionRects = new ArrayList<>();
+    private final PlayerCollisionHandler collisionHandler = new PlayerCollisionHandler();
 
     public GamePanel(Context context) {
         super(context);
@@ -223,134 +218,16 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
     }
 
     public void checkPlayerCollision(float nextX, float nextY) {
-        GameMap map = mapManager.getCurrentMap();
-        float collisionOffsetX = GameConstants.getCollisionOffsetX() * GameConstants.Player.SCALE_MULTIPLIER;
-        float collisionOffsetY = GameConstants.getCollisionOffsetY() * GameConstants.Player.SCALE_MULTIPLIER;
-        int playerWidth = GameConstants.Player.PLAYER_COLLISION_WIDTH * GameConstants.Player.SCALE_MULTIPLIER;
-        int playerHeight = GameConstants.Player.PLAYER_COLLISION_HEIGHT * GameConstants.Player.SCALE_MULTIPLIER;
-        int tileWidth = GameConstants.FloorTile.WIDTH;
-        int tileHeight = GameConstants.FloorTile.HEIGHT;
-
-        if (Debug.isDebugMode())
-            collisionRects.clear();
-
-        // --- Horizontal Collision (sweep along vertical edge) ---
-        boolean canMoveHorizontally = true;
-        float newLeft = nextX + collisionOffsetX;
-        float newRight = nextX + collisionOffsetX + playerWidth - 1;
-        float top = playerY + collisionOffsetY;
-        float bottom = playerY + collisionOffsetY + playerHeight - 1;
-
-        float stepY = Math.max(1, tileHeight / 3f);
-        for (float ty = top; ty <= bottom; ty += stepY) {
-            float testX = (playerVelocityX > 0) ? newRight : newLeft;
-            if (map.isSolidTileAt(testX, ty)) {
-                canMoveHorizontally = false;
-                if (Debug.isDebugMode()) {
-                    Rect tileRect = getTileRectAtWorld(testX, ty);
-                    collisionRects.add(tileRect);
-                }
-            }
-        }
-        // Check bottom edge in case of rounding
-        if (canMoveHorizontally) {
-            float testX = (playerVelocityX > 0) ? newRight : newLeft;
-            if (map.isSolidTileAt(testX, bottom)) {
-                canMoveHorizontally = false;
-                if (Debug.isDebugMode()) {
-                    Rect tileRect = getTileRectAtWorld(testX, bottom);
-                    collisionRects.add(tileRect);
-                }
-            }
-        }
-        if (canMoveHorizontally) {
-            playerX = nextX;
-        } else {
-            // Snap to edge of tile
-            if (playerVelocityX > 0) { // moving right
-                int tileX = (int) (newRight / tileWidth);
-                playerX = tileX * tileWidth - collisionOffsetX - playerWidth;
-            } else if (playerVelocityX < 0) { // moving left
-                int tileX = (int) (newLeft / tileWidth);
-                playerX = (tileX + 1) * tileWidth - collisionOffsetX;
-            }
-            playerVelocityX = 0;
-        }
-
-        // --- Vertical Collision (sweep along horizontal edge) ---
-        boolean canMoveVertically = true;
-        float left = playerX + collisionOffsetX;
-        float right = playerX + collisionOffsetX + playerWidth - 1;
-        float newTop = nextY + collisionOffsetY;
-        float newBottom = nextY + collisionOffsetY + playerHeight - 1;
-
-        float stepX = Math.max(1, tileWidth / 3f);
-        if (playerVelocityY >= 0) { // Falling
-            for (float tx = left; tx <= right; tx += stepX) {
-                if (map.isSolidTileAt(tx, newBottom)) {
-                    canMoveVertically = false;
-                    if (Debug.isDebugMode()) {
-                        Rect tileRect = getTileRectAtWorld(tx, newBottom);
-                        collisionRects.add(tileRect);
-                    }
-                }
-            }
-            // Check right edge in case of rounding
-            if (canMoveVertically && map.isSolidTileAt(right, newBottom)) {
-                canMoveVertically = false;
-                if (Debug.isDebugMode()) {
-                    Rect tileRect = getTileRectAtWorld(right, newBottom);
-                    collisionRects.add(tileRect);
-                }
-            }
-        } else { // Jumping
-            for (float tx = left; tx <= right; tx += stepX) {
-                if (map.isSolidTileAt(tx, newTop)) {
-                    canMoveVertically = false;
-                    if (Debug.isDebugMode()) {
-                        Rect tileRect = getTileRectAtWorld(tx, newTop);
-                        collisionRects.add(tileRect);
-                    }
-                }
-            }
-            // Check right edge in case of rounding
-            if (canMoveVertically && map.isSolidTileAt(right, newTop)) {
-                canMoveVertically = false;
-                if (Debug.isDebugMode()) {
-                    Rect tileRect = getTileRectAtWorld(right, newTop);
-                    collisionRects.add(tileRect);
-                }
-            }
-        }
-
-        if (canMoveVertically) {
-            playerY = nextY;
-        } else {
-            if (playerVelocityY > 0) { // Falling
-                int tileY = (int) (newBottom / tileHeight);
-                float tileTop = tileY * tileHeight;
-                playerY = tileTop - collisionOffsetY - playerHeight;
-                isJumping = false;
-            } else { // Hitting ceiling
-                int tileY = (int) (newTop / tileHeight);
-                float tileBottom = (tileY + 1) * tileHeight;
-                playerY = tileBottom - collisionOffsetY;
-            }
-            playerVelocityY = 0;
-        }
+        PlayerCollisionHandler.PlayerCollisionResult collisionResult = collisionHandler.checkCollision(
+                mapManager.getCurrentMap(), playerY,
+                nextX, nextY,
+                playerVelocityX, playerVelocityY);
+        playerX = collisionResult.x;
+        playerY = collisionResult.y;
+        playerVelocityX = collisionResult.velocityX;
+        playerVelocityY = collisionResult.velocityY;
+        isJumping = collisionResult.isJumping;
     }
-
-    // Helper to get the rectangle of a tile at a world position
-    private Rect getTileRectAtWorld(float worldX, float worldY) {
-        int tileWidth = GameConstants.FloorTile.WIDTH;
-        int tileHeight = GameConstants.FloorTile.HEIGHT;
-        int tileX = (int) (worldX / tileWidth);
-        int tileY = (int) (worldY / tileHeight);
-        int drawX = tileX * tileWidth - mapManager.getCameraX();
-        int drawY = tileY * tileHeight + mapManager.getMapOffsetY(); // <-- Correct
-        return new Rect(drawX, drawY, drawX + tileWidth, drawY + tileHeight);
-    }
-
 
     @Override
     public boolean onTouchEvent(MotionEvent event) { // Part of View, which SurfaceView extends and GamePanel extends SurfaceView
@@ -365,8 +242,7 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
     }
 
     @Override
-    public void surfaceChanged(@NonNull SurfaceHolder holder, int format, int width,
-                               int height) {
+    public void surfaceChanged(@NonNull SurfaceHolder holder, int format, int width, int height) {
     }
 
     @Override

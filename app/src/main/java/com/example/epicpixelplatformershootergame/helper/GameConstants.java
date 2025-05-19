@@ -1,10 +1,6 @@
 package com.example.epicpixelplatformershootergame.helper;
 
 import android.content.res.Resources;
-import android.graphics.Color;
-import android.graphics.Paint;
-
-import com.example.epicpixelplatformershootergame.Debug;
 
 /**
  * Uses as a config for constants

@@ -1,7 +1,5 @@
 package com.example.epicpixelplatformershootergame.environments;
 
-import android.graphics.Canvas;
-
 import com.example.epicpixelplatformershootergame.helper.GameConstants;
 
 public class GameMap {
