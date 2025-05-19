@@ -25,7 +25,7 @@ import com.example.epicpixelplatformershootergame.physics.PlayerCollisionHandler
 import java.util.ArrayList;
 import java.util.List;
 
-
+// --- Constructor ---
 public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
     private Paint redPaint = new Paint(); // change
     private GameLoop gameLoop;
@@ -72,166 +72,8 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
         mapManager = new MapManager();
     }
 
-    public void render() {
-        SurfaceHolder surfaceHolder = getHolder();
-        Canvas c = surfaceHolder.lockCanvas();
-        if (c == null) return;
 
-        c.drawColor(Color.BLACK);
-        c.drawBitmap(background_back, 0, 0, null);
-        // background_front scroll
-        if (background_front != null) {
-            int cameraX = mapManager.getCameraX();
-            int bgWidth = background_front.getWidth();
-            int offset = cameraX % bgWidth;
-
-            for (int x = -offset; x < getWidth(); x += bgWidth)
-                c.drawBitmap(background_front, x, 0, null);
-        }
-
-        // Camera and Map
-        mapManager.updateCamera(playerX);
-        mapManager.draw(c);
-
-        int mapOffsetY = mapManager.getMapOffsetY();
-        int cameraX = mapManager.getCameraX();
-
-        c.drawBitmap(GameCharacters.PLAYER.getSprite(playerAnimationIndexY, playerAnimationIndexX),
-                playerX - cameraX, playerY + mapOffsetY, null);
-
-        c.drawBitmap(GameCharacters.GRUNTTWO.getSprite(gruntTwoAnimationIndexY, 0), 800, 600, null);
-
-        // Buttons
-        touchEvents.draw(c);
-
-        if (Debug.isDebugMode()) {
-            float collisionOffsetX = GameConstants.getCollisionOffsetX() * GameConstants.Player.SCALE_MULTIPLIER;
-            float collisionOffsetY = GameConstants.getCollisionOffsetY() * GameConstants.Player.SCALE_MULTIPLIER;
-            Debug.drawDebugPlayer(
-                    c,
-                    playerX - cameraX + collisionOffsetX,
-                    playerY + mapOffsetY + collisionOffsetY,
-                    GameConstants.Player.PLAYER_COLLISION_WIDTH * GameConstants.Player.SCALE_MULTIPLIER,
-                    GameConstants.Player.PLAYER_COLLISION_HEIGHT * GameConstants.Player.SCALE_MULTIPLIER
-            );
-        }
-
-        surfaceHolder.unlockCanvasAndPost(c);
-    }
-
-    public void update(double delta) {
-        updateAnimation();
-
-        // Apply gravity
-        playerVelocityY += GRAVITY;
-
-        // Handle input movement
-        float moveSpeed = GameConstants.Physics.PLAYER_MOVE_SPEED;
-        playerVelocityX = 0;
-
-        if (moveLeft)
-            playerVelocityX = -moveSpeed;
-        else if (moveRight)
-            playerVelocityX = moveSpeed;
-
-
-        // Predict next position
-        float nextX = playerX + playerVelocityX;
-        float nextY = playerY + playerVelocityY;
-
-        // Clamp player's nextX to map bounds before collision
-        int mapPixelWidth = mapManager.getCurrentMap().getArrayWidth() * GameConstants.FloorTile.WIDTH;
-        nextX = Math.max(0, Math.min(nextX, mapPixelWidth - GameConstants.Player.WIDTH));
-
-        // Handle collisions based on predicted position
-        checkPlayerCollision(nextX, nextY);
-
-        // Update camera after finalized player position
-        mapManager.updateCamera(playerX);
-
-        // Clamp vertical position to screen
-        if (playerY + GameConstants.Player.HEIGHT >= GameConstants.Screen.SCREENHEIGHT) {
-            playerY = GameConstants.Screen.SCREENHEIGHT - GameConstants.Player.HEIGHT;
-            playerVelocityY = 0;
-            isJumping = false;
-        }
-    }
-
-    private void updateAnimation() {
-        animationTick++;
-
-        if (animationTick >= animationSpeed) {
-            animationTick = 0;
-
-            // Player animation
-            if (moveRight) {
-                playerFaceDirection = GameConstants.Facing_Direction.RIGHT;
-                // Walking right animation sequence
-                int[] rightAnimY = {0, 0, 0, 1}; // rows
-                int[] rightAnimX = {1, 2, 3, 0}; // columns
-
-                animationFrame = (animationFrame + 1) % rightAnimX.length;
-                playerAnimationIndexY = rightAnimY[animationFrame];
-                playerAnimationIndexX = rightAnimX[animationFrame];
-            } else if (moveLeft) {
-                playerFaceDirection = GameConstants.Facing_Direction.LEFT;
-                // Walking left animation sequence
-                int[] leftAnimY = {1, 1, 2, 2}; // rows
-                int[] leftAnimX = {2, 3, 0, 1}; // columns
-
-                animationFrame = (animationFrame + 1) % leftAnimX.length;
-                playerAnimationIndexY = leftAnimY[animationFrame];
-                playerAnimationIndexX = leftAnimX[animationFrame];
-                // Standing
-            } else if (playerFaceDirection == GameConstants.Facing_Direction.RIGHT) {
-                playerAnimationIndexY = 0;
-                playerAnimationIndexX = 0;
-            } else {
-                playerAnimationIndexY = 1;
-                playerAnimationIndexX = 1;
-            }
-
-            // GruntTwo animation
-            gruntTwoAnimationIndexY++;
-            if (gruntTwoAnimationIndexY >= 58)
-                gruntTwoAnimationIndexY = 0;
-        }
-    }
-
-    public void setMoveLeft(boolean moveLeft) {
-        this.moveLeft = moveLeft;
-        playerFaceDirection = GameConstants.Facing_Direction.LEFT;
-    }
-
-    public void setMoveRight(boolean moveRight) {
-        this.moveRight = moveRight;
-        playerFaceDirection = GameConstants.Facing_Direction.RIGHT;
-    }
-
-    public void setJump(boolean moveJump) {
-        if (!isJumping) {
-            playerVelocityY = JUMP_STRENGTH;
-            isJumping = true;
-        }
-    }
-
-    public void checkPlayerCollision(float nextX, float nextY) {
-        PlayerCollisionHandler.PlayerCollisionResult collisionResult = collisionHandler.checkCollision(
-                mapManager.getCurrentMap(), playerY,
-                nextX, nextY,
-                playerVelocityX, playerVelocityY);
-        playerX = collisionResult.x;
-        playerY = collisionResult.y;
-        playerVelocityX = collisionResult.velocityX;
-        playerVelocityY = collisionResult.velocityY;
-        isJumping = collisionResult.isJumping;
-    }
-
-    @Override
-    public boolean onTouchEvent(MotionEvent event) { // Part of View, which SurfaceView extends and GamePanel extends SurfaceView
-        return touchEvents.touchEvent(event);
-    }
-
+    //--- SurfaceView/SurfaceHolder/Android lifecycle methods ---
     @Override
     public void surfaceCreated(@NonNull SurfaceHolder surfaceHolder) {
         GameConstants.Screen.SCREENWIDTH = getWidth();
@@ -272,6 +114,170 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
         }
     }
 
+    @Override
+    public boolean onTouchEvent(MotionEvent event) { // Part of View, which SurfaceView extends and GamePanel extends SurfaceView
+        return touchEvents.touchEvent(event);
+    }
+
+
+    // --- Game Loop ---
+    public void render() {
+        SurfaceHolder surfaceHolder = getHolder();
+        Canvas c = surfaceHolder.lockCanvas();
+        if (c == null) return;
+
+        drawBackground(c);
+        mapManager.updateCamera(playerX);
+        mapManager.draw(c);
+        drawPlayer(c);
+        drawGruntTwo(c);
+        touchEvents.draw(c);
+        drawDebug(c);
+
+        surfaceHolder.unlockCanvasAndPost(c);
+    }
+
+    public void update(double delta) {
+        updateAnimation();
+        applyGravity();
+        handleMovement();
+
+        float nextX = clampPlayerPosition(playerX + playerVelocityX);
+        float nextY = playerY + playerVelocityY;
+
+        checkPlayerCollision(nextX, nextY);
+        mapManager.updateCamera(playerX);
+
+        if (playerY + GameConstants.Player.HEIGHT >= GameConstants.Screen.SCREENHEIGHT) {
+            playerY = GameConstants.Screen.SCREENHEIGHT - GameConstants.Player.HEIGHT;
+            playerVelocityY = 0;
+            isJumping = false;
+        }
+    }
+
+
+    //--- Movement methods ---
+    public void setMoveLeft(boolean moveLeft) {
+        this.moveLeft = moveLeft;
+        playerFaceDirection = GameConstants.Facing_Direction.LEFT;
+    }
+
+    public void setMoveRight(boolean moveRight) {
+        this.moveRight = moveRight;
+        playerFaceDirection = GameConstants.Facing_Direction.RIGHT;
+    }
+
+    public void setJump(boolean isJumping) {
+        if (!this.isJumping && isJumping) {
+            playerVelocityY = JUMP_STRENGTH;
+            this.isJumping = true;
+        }
+    }
+
+
+    // --- Animation methods ---
+    private void updateAnimation() {
+        animationTick++;
+
+        if (animationTick >= animationSpeed) {
+            animationTick = 0;
+
+            if (moveRight) {
+                playerFaceDirection = GameConstants.Facing_Direction.RIGHT;
+                setPlayerAnimationRight();
+            } else if (moveLeft) {
+                playerFaceDirection = GameConstants.Facing_Direction.LEFT;
+                setPlayerAnimationLeft();
+            } else
+                setPlayerAnimationIdle();
+
+            // Grunt Two Animation
+            gruntTwoAnimationIndexY++;
+            if (gruntTwoAnimationIndexY >= 58)
+                gruntTwoAnimationIndexY = 0;
+        }
+    }
+
+    private void setPlayerAnimationRight() {
+        int[] rightAnimY = {0, 0, 0, 1};
+        int[] rightAnimX = {1, 2, 3, 0};
+        animationFrame = (animationFrame + 1) % rightAnimX.length;
+        playerAnimationIndexY = rightAnimY[animationFrame];
+        playerAnimationIndexX = rightAnimX[animationFrame];
+    }
+
+    private void setPlayerAnimationLeft() {
+        int[] leftAnimY = {1, 1, 2, 2};
+        int[] leftAnimX = {2, 3, 0, 1};
+        animationFrame = (animationFrame + 1) % leftAnimX.length;
+        playerAnimationIndexY = leftAnimY[animationFrame];
+        playerAnimationIndexX = leftAnimX[animationFrame];
+    }
+
+    private void setPlayerAnimationIdle() {
+        if (playerFaceDirection == GameConstants.Facing_Direction.RIGHT) {
+            playerAnimationIndexY = 0;
+            playerAnimationIndexX = 0;
+        } else {
+            playerAnimationIndexY = 1;
+            playerAnimationIndexX = 1;
+        }
+    }
+
+
+    // --- Drawing methods ---
+    private void drawBackground(Canvas c) {
+        c.drawColor(Color.BLACK);
+        c.drawBitmap(background_back, 0, 0, null);
+        if (background_front != null) {
+            int cameraX = mapManager.getCameraX();
+            int bgWidth = background_front.getWidth();
+            int offset = cameraX % bgWidth;
+            for (int x = -offset; x < getWidth(); x += bgWidth)
+                c.drawBitmap(background_front, x, 0, null);
+        }
+    }
+
+    private void drawPlayer(Canvas c) {
+        int mapOffsetY = mapManager.getMapOffsetY();
+        int cameraX = mapManager.getCameraX();
+        c.drawBitmap(GameCharacters.PLAYER.getSprite(playerAnimationIndexY, playerAnimationIndexX),
+                playerX - cameraX, playerY + mapOffsetY, null);
+    }
+
+    private void drawGruntTwo(Canvas c) {
+        c.drawBitmap(GameCharacters.GRUNTTWO.getSprite(gruntTwoAnimationIndexY, 0), 800, 600, null);
+    }
+
+    private void drawDebug(Canvas c) {
+        if (Debug.isDebugMode()) {
+            float collisionOffsetX = GameConstants.getCollisionOffsetX() * GameConstants.Player.SCALE_MULTIPLIER;
+            float collisionOffsetY = GameConstants.getCollisionOffsetY() * GameConstants.Player.SCALE_MULTIPLIER;
+            Debug.drawDebugPlayer(
+                    c,
+                    playerX - mapManager.getCameraX() + collisionOffsetX,
+                    playerY + mapManager.getMapOffsetY() + collisionOffsetY,
+                    GameConstants.Player.PLAYER_COLLISION_WIDTH * GameConstants.Player.SCALE_MULTIPLIER,
+                    GameConstants.Player.PLAYER_COLLISION_HEIGHT * GameConstants.Player.SCALE_MULTIPLIER
+            );
+        }
+    }
+
+
+    // --- Collision detection ---
+    public void checkPlayerCollision(float nextX, float nextY) {
+        PlayerCollisionHandler.PlayerCollisionResult collisionResult = collisionHandler.checkCollision(
+                mapManager.getCurrentMap(), playerY,
+                nextX, nextY,
+                playerVelocityX, playerVelocityY);
+        playerX = collisionResult.x;
+        playerY = collisionResult.y;
+        playerVelocityX = collisionResult.velocityX;
+        playerVelocityY = collisionResult.velocityY;
+        isJumping = collisionResult.isJumping;
+    }
+
+    // --- private resource loading
     private void loadBackgrounds(Context context) {
         BitmapFactory.Options options = new BitmapFactory.Options();
         options.inPreferredConfig = Bitmap.Config.RGB_565;
@@ -280,6 +286,26 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
                 GameConstants.Screen.SCREENHEIGHT, true);
         background_front = BitmapFactory.decodeResource(context.getResources(), R.drawable.background_front, options);
         background_front = Bitmap.createScaledBitmap(background_front, GAME_WIDTH, GAME_HEIGHT, true);
+    }
+
+
+    // --- priva physics helpers ---
+    private void applyGravity() {
+        playerVelocityY += GRAVITY;
+    }
+
+    private void handleMovement() {
+        float moveSpeed = GameConstants.Physics.PLAYER_MOVE_SPEED;
+        playerVelocityX = 0;
+        if (moveLeft)
+            playerVelocityX = -moveSpeed;
+        else if (moveRight)
+            playerVelocityX = moveSpeed;
+    }
+
+    private float clampPlayerPosition(float nextX) {
+        int mapPixelWidth = mapManager.getCurrentMap().getArrayWidth() * GameConstants.FloorTile.WIDTH;
+        return Math.max(0, Math.min(nextX, mapPixelWidth - GameConstants.Player.WIDTH));
     }
 }
 

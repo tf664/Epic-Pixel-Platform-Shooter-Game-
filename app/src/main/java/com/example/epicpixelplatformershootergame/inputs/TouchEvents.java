@@ -80,15 +80,13 @@ public class TouchEvents {
         return true;
     }
 
+    private boolean isWithin(float x, float y, float centerX, float centerY, float radius) {
+        return Math.hypot(x - centerX, y - centerY) <= radius;
+    }
+
     private void handleTouchDown(float x, float y) {
-        if (isWithin(x, y, xCenterRight, yCenterRight, GameConstants.Button.RADIUS)) {
-            gamePanel.setMoveRight(true);
-        } else if (isWithin(x, y, xCenterLeft, yCenterLeft, GameConstants.Button.RADIUS)) {
-            gamePanel.setMoveLeft(true);
-        } else if (isWithin(x, y, xCenterJump, yCenterJump, GameConstants.Button.RADIUS)) {
-            gamePanel.setJump(true);
-            isJumping = true;  // Mark that jump has been initiated
-        }
+        handleMovementButtons(x, y);
+        handleJumpButton(x, y);
     }
 
     private void handleTouchUp(float x, float y) {
@@ -102,7 +100,21 @@ public class TouchEvents {
         }
     }
 
-    private boolean isWithin(float x, float y, float centerX, float centerY, float radius) {
-        return Math.hypot(x - centerX, y - centerY) <= radius;
+    private void handleMovementButtons(float x, float y) {
+        if (isWithin(x, y, xCenterLeft, yCenterLeft, GameConstants.Button.RADIUS)) {
+            gamePanel.setMoveLeft(true);
+        }
+        if (isWithin(x, y, xCenterRight, yCenterRight, GameConstants.Button.RADIUS)) {
+            gamePanel.setMoveRight(true);
+        }
     }
+
+    private void handleJumpButton(float x, float y) {
+        if (isWithin(x, y, xCenterJump, yCenterJump, GameConstants.Button.RADIUS) && !isJumping) {
+            gamePanel.setJump(true);
+            isJumping = true; // Mark that the jump was initiated
+        }
+    }
+
+
 }
