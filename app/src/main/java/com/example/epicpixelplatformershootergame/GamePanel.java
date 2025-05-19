@@ -36,9 +36,8 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
 
     private boolean moveLeft = false, moveRight = false;
     private int animationFrame;
-
     private int animationTick;
-    private double animationSpeed = 7.5;
+    private double animationSpeed = GameConstants.Physics.ANIMATION_SPEED;
 
     // Map
     private MapManager mapManager;
@@ -50,15 +49,16 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
     private float playerVelocityX = 0, playerVelocityY = 0;
     private boolean isJumping = false;
 
-    private final float GRAVITY = 0.5f;
-    private final float JUMP_STRENGTH = -16;
+    private final float GRAVITY = GameConstants.Physics.GRAVITY;
+    private final float JUMP_STRENGTH = GameConstants.Physics.JUMP_STRENGTH;
+
 
     private final List<Rect> collisionRects = new ArrayList<>();
     private final PlayerCollisionHandler collisionHandler = new PlayerCollisionHandler();
 
     public GamePanel(Context context) {
         super(context);
-        Debug.setDebugMode(GameConstants.DebugMode.debugMode);
+        Debug.setDebugMode(GameConstants.DebugMode.DEBUG_MODE);
 
         setZOrderOnTop(true);
         getHolder().setFormat(android.graphics.PixelFormat.TRANSPARENT);
@@ -126,15 +126,14 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
         playerVelocityY += GRAVITY;
 
         // Handle input movement
-        float moveSpeed = 10;
+        float moveSpeed = GameConstants.Physics.PLAYER_MOVE_SPEED;
         playerVelocityX = 0;
 
-        if (moveLeft) {
+        if (moveLeft)
             playerVelocityX = -moveSpeed;
-        }
-        if (moveRight) {
+        else if (moveRight)
             playerVelocityX = moveSpeed;
-        }
+
 
         // Predict next position
         float nextX = playerX + playerVelocityX;
@@ -151,8 +150,8 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
         mapManager.updateCamera(playerX);
 
         // Clamp vertical position to screen
-        if (playerY + GameConstants.Player.HEIGHT >= GameConstants.Screen.screenHeight) {
-            playerY = GameConstants.Screen.screenHeight - GameConstants.Player.HEIGHT;
+        if (playerY + GameConstants.Player.HEIGHT >= GameConstants.Screen.SCREENHEIGHT) {
+            playerY = GameConstants.Screen.SCREENHEIGHT - GameConstants.Player.HEIGHT;
             playerVelocityY = 0;
             isJumping = false;
         }
@@ -164,6 +163,7 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
         if (animationTick >= animationSpeed) {
             animationTick = 0;
 
+            // Player animation
             if (moveRight) {
                 playerFaceDirection = GameConstants.Facing_Direction.RIGHT;
                 // Walking right animation sequence
@@ -189,14 +189,12 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
             } else {
                 playerAnimationIndexY = 1;
                 playerAnimationIndexX = 1;
-
-
-                // GruntTwo animation
-                gruntTwoAnimationIndexY++;
-                if (gruntTwoAnimationIndexY >= 58) {
-                    gruntTwoAnimationIndexY = 0;
-                }
             }
+
+            // GruntTwo animation
+            gruntTwoAnimationIndexY++;
+            if (gruntTwoAnimationIndexY >= 58)
+                gruntTwoAnimationIndexY = 0;
         }
     }
 
@@ -236,8 +234,8 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
 
     @Override
     public void surfaceCreated(@NonNull SurfaceHolder surfaceHolder) {
-        GameConstants.Screen.screenWidth = getWidth();
-        GameConstants.Screen.screenHeight = getHeight();
+        GameConstants.Screen.SCREENWIDTH = getWidth();
+        GameConstants.Screen.SCREENHEIGHT = getHeight();
         gameLoop.startGameLoop();
     }
 
@@ -253,8 +251,8 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
         super.onSizeChanged(w, h, oldw, oldh);
 
-        GameConstants.Screen.screenWidth = w;
-        GameConstants.Screen.screenHeight = h;
+        GameConstants.Screen.SCREENWIDTH = w;
+        GameConstants.Screen.SCREENHEIGHT = h;
 
         GameConstants.Camera.leftThreshold = w / 3;
         GameConstants.Camera.rightThreshold = w * 2 / 3;
@@ -278,8 +276,8 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
         BitmapFactory.Options options = new BitmapFactory.Options();
         options.inPreferredConfig = Bitmap.Config.RGB_565;
         background_back = BitmapFactory.decodeResource(context.getResources(), R.drawable.background_back, options);
-        background_back = Bitmap.createScaledBitmap(background_back, GameConstants.Screen.screenWidth,
-                GameConstants.Screen.screenHeight, true);
+        background_back = Bitmap.createScaledBitmap(background_back, GameConstants.Screen.SCREENWIDTH,
+                GameConstants.Screen.SCREENHEIGHT, true);
         background_front = BitmapFactory.decodeResource(context.getResources(), R.drawable.background_front, options);
         background_front = Bitmap.createScaledBitmap(background_front, GAME_WIDTH, GAME_HEIGHT, true);
     }

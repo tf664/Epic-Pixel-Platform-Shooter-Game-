@@ -6,11 +6,10 @@ import com.example.epicpixelplatformershootergame.helper.GameConstants;
 
 public class MapManager {
     private GameMap currentMap;
-    private int screenWidth = GameConstants.Screen.screenWidth;
-    private int screenHeight = GameConstants.Screen.screenHeight;
+    private int screenWidth = GameConstants.Screen.SCREENWIDTH;
+    private int screenHeight = GameConstants.Screen.SCREENHEIGHT;
     private int mapWidth;
-    // Initial position of the camera (it starts in the middle of the screen)
-    private int cameraX = 0;  // Camera's horizontal offset
+    private int cameraX = 0;  // Initial position of the camera
 
     public MapManager() {
         initMainMap();
@@ -52,7 +51,7 @@ public class MapManager {
         System.out.println("The playerScreenX: " + playerScreenX);
         System.out.println("playerX " + playerX);
         System.out.println("Threshold: " + GameConstants.Camera.leftThreshold + " " + GameConstants.Camera.rightThreshold);
-        System.out.println("Screen dimension: " + GameConstants.Screen.screenHeight + " and " + GameConstants.Screen.screenWidth);
+        System.out.println("Screen dimension: " + GameConstants.Screen.SCREENHEIGHT + " and " + GameConstants.Screen.SCREENWIDTH);
 
         if (playerScreenX < GameConstants.Camera.leftThreshold) {
             cameraX = (int) playerX - GameConstants.Camera.leftThreshold;
