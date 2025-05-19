@@ -19,13 +19,13 @@ public final class GameConstants {
     }
 
     public static final class Screen {
-            public static int screenWidth = Resources.getSystem().getDisplayMetrics().widthPixels;
-            public static int screenHeight = Resources.getSystem().getDisplayMetrics().heightPixels;
+        public static int screenWidth = Resources.getSystem().getDisplayMetrics().widthPixels;
+        public static int screenHeight = Resources.getSystem().getDisplayMetrics().heightPixels;
     }
 
     public static final class Camera {
         public static int leftThreshold = Screen.screenWidth / 3;
-        public static int  rightThreshold = Screen.screenWidth * 2 / 3;
+        public static int rightThreshold = Screen.screenWidth * 2 / 3;
     }
 
     /**
@@ -51,13 +51,19 @@ public final class GameConstants {
     public static final class Player {
         public static final int FRAME_WIDTH = 32;
         public static final int FRAME_HEIGHT = 48;
-        public static final int PLAYER_WIDTH = 20;
-        public static final int PLAYER_HEIGHT = 46;
-        public static final int PLAYER_OFFSET_X = 6;
-        public static final int PLAYER_OFFSET_Y = 1;
+        public static final int PLAYER_COLLISION_WIDTH = 20;
+        public static final int PLAYER_COLLISION_HEIGHT = 46;
         public static final int SCALE_MULTIPLIER = 6;
         public static final int WIDTH = FRAME_WIDTH * SCALE_MULTIPLIER;
         public static final int HEIGHT = FRAME_HEIGHT * SCALE_MULTIPLIER;
+    }
+
+    public static int getCollisionOffsetX() {
+        return (Player.FRAME_WIDTH - Player.PLAYER_COLLISION_WIDTH) / 2;
+    }
+
+    public static int getCollisionOffsetY() {
+        return (Player.FRAME_HEIGHT - Player.PLAYER_COLLISION_HEIGHT) / 2;
     }
 
     public static final class GruntTwo {

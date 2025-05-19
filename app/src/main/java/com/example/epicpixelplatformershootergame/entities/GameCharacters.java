@@ -72,11 +72,13 @@ public enum GameCharacters implements BitmapMethods {
 
     public Rect getCollisionRect(int x, int y) {
         if (this == PLAYER) {
+            int offsetX = GameConstants.getCollisionOffsetX() * GameConstants.Player.SCALE_MULTIPLIER;
+            int offsetY = GameConstants.getCollisionOffsetY() * GameConstants.Player.SCALE_MULTIPLIER;
             return new Rect(
-                    x + GameConstants.Player.PLAYER_OFFSET_X,
-                    y + GameConstants.Player.PLAYER_OFFSET_Y,
-                    x + GameConstants.Player.PLAYER_OFFSET_X + GameConstants.Player.PLAYER_WIDTH,
-                    y + GameConstants.Player.PLAYER_OFFSET_Y + GameConstants.Player.PLAYER_HEIGHT
+                    x + offsetX,
+                    y + offsetY,
+                    x + offsetX + GameConstants.Player.PLAYER_COLLISION_WIDTH * GameConstants.Player.SCALE_MULTIPLIER,
+                    y + offsetY + GameConstants.Player.PLAYER_COLLISION_HEIGHT * GameConstants.Player.SCALE_MULTIPLIER
             );
         }
         return null;

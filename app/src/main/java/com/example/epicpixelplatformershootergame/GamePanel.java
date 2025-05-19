@@ -110,11 +110,15 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
         touchEvents.draw(c);
 
         if (Debug.isDebugMode()) {
-            Debug.drawDebugPlayer(c, playerX - cameraX, playerY + mapOffsetY,
-                    (float) (GameConstants.Player.FRAME_WIDTH * GameConstants.Player.SCALE_MULTIPLIER),
-                    (float) (GameConstants.Player.FRAME_HEIGHT * GameConstants.Player.SCALE_MULTIPLIER));
-            Debug.drawDebugMap(c, collisionRects);
-
+            float collisionOffsetX = GameConstants.getCollisionOffsetX() * GameConstants.Player.SCALE_MULTIPLIER;
+            float collisionOffsetY = GameConstants.getCollisionOffsetY() * GameConstants.Player.SCALE_MULTIPLIER;
+            Debug.drawDebugPlayer(
+                    c,
+                    playerX - cameraX + collisionOffsetX,
+                    playerY + mapOffsetY + collisionOffsetY,
+                    GameConstants.Player.PLAYER_COLLISION_WIDTH * GameConstants.Player.SCALE_MULTIPLIER,
+                    GameConstants.Player.PLAYER_COLLISION_HEIGHT * GameConstants.Player.SCALE_MULTIPLIER
+            );
         }
 
         surfaceHolder.unlockCanvasAndPost(c);
@@ -221,16 +225,18 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
 
     public void checkPlayerCollision(float nextX, float nextY) {
         GameMap map = mapManager.getCurrentMap();
-        int playerWidth = GameConstants.Player.WIDTH;
-        int playerHeight = GameConstants.Player.HEIGHT;
+        float collisionOffsetX = GameConstants.getCollisionOffsetX() * GameConstants.Player.SCALE_MULTIPLIER;
+        float collisionOffsetY = GameConstants.getCollisionOffsetY() * GameConstants.Player.SCALE_MULTIPLIER;
+        int playerWidth = GameConstants.Player.PLAYER_COLLISION_WIDTH * GameConstants.Player.SCALE_MULTIPLIER;
+        int playerHeight = GameConstants.Player.PLAYER_COLLISION_HEIGHT * GameConstants.Player.SCALE_MULTIPLIER;
 
         if (Debug.isDebugMode())
             collisionRects.clear();
 
         // --- Horizontal Collision ---
         boolean canMoveHorizontally = true;
-        float[] testXs = {nextX, nextX + playerWidth - 1};
-        float[] testYs = {playerY, playerY + playerHeight - 1};
+        float[] testXs = {nextX + collisionOffsetX, nextX + collisionOffsetX + playerWidth - 1};
+        float[] testYs = {playerY + collisionOffsetY, playerY + collisionOffsetY + playerHeight - 1};
         for (float tx : testXs) {
             for (float ty : testYs) {
                 if (map.isSolidTileAt(tx, ty)) {
@@ -242,16 +248,15 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
                 }
             }
         }
-        if (canMoveHorizontally) {
+        if (canMoveHorizontally)
             playerX = nextX;
-        } else {
+        else
             playerVelocityX = 0;
-        }
 
         // --- Vertical Collision ---
         boolean canMoveVertically = true;
-        testXs = new float[]{playerX, playerX + playerWidth - 1};
-        testYs = new float[]{nextY + playerHeight - 1};
+        testXs = new float[]{playerX + collisionOffsetX, playerX + collisionOffsetX + playerWidth - 1};
+        testYs = new float[]{nextY + collisionOffsetY + playerHeight - 1};
         for (float tx : testXs) {
             for (float ty : testYs) {
                 if (map.isSolidTileAt(tx, ty)) {
@@ -266,9 +271,10 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
         if (canMoveVertically) {
             playerY = nextY;
         } else {
-            // Snap to tile grid
-            int tileY = (int) ((nextY + playerHeight) / GameConstants.FloorTile.HEIGHT);
-            playerY = tileY * GameConstants.FloorTile.HEIGHT - playerHeight;
+            // Snap the collision box bottom to the top of the tile
+            int tileY = (int) ((nextY + collisionOffsetY + playerHeight - 1) / GameConstants.FloorTile.HEIGHT);
+            float tileTop = tileY * GameConstants.FloorTile.HEIGHT;
+            playerY = tileTop - collisionOffsetY - playerHeight;
             playerVelocityY = 0;
             isJumping = false;
         }
