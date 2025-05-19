@@ -222,61 +222,121 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
         }
     }
 
-
     public void checkPlayerCollision(float nextX, float nextY) {
         GameMap map = mapManager.getCurrentMap();
         float collisionOffsetX = GameConstants.getCollisionOffsetX() * GameConstants.Player.SCALE_MULTIPLIER;
         float collisionOffsetY = GameConstants.getCollisionOffsetY() * GameConstants.Player.SCALE_MULTIPLIER;
         int playerWidth = GameConstants.Player.PLAYER_COLLISION_WIDTH * GameConstants.Player.SCALE_MULTIPLIER;
         int playerHeight = GameConstants.Player.PLAYER_COLLISION_HEIGHT * GameConstants.Player.SCALE_MULTIPLIER;
+        int tileWidth = GameConstants.FloorTile.WIDTH;
+        int tileHeight = GameConstants.FloorTile.HEIGHT;
 
         if (Debug.isDebugMode())
             collisionRects.clear();
 
-        // --- Horizontal Collision ---
+        // --- Horizontal Collision (sweep along vertical edge) ---
         boolean canMoveHorizontally = true;
-        float[] testXs = {nextX + collisionOffsetX, nextX + collisionOffsetX + playerWidth - 1};
-        float[] testYs = {playerY + collisionOffsetY, playerY + collisionOffsetY + playerHeight - 1};
-        for (float tx : testXs) {
-            for (float ty : testYs) {
-                if (map.isSolidTileAt(tx, ty)) {
-                    canMoveHorizontally = false;
-                    if (Debug.isDebugMode()) {
-                        Rect tileRect = getTileRectAtWorld(tx, ty);
-                        collisionRects.add(tileRect);
-                    }
+        float newLeft = nextX + collisionOffsetX;
+        float newRight = nextX + collisionOffsetX + playerWidth - 1;
+        float top = playerY + collisionOffsetY;
+        float bottom = playerY + collisionOffsetY + playerHeight - 1;
+
+        float stepY = Math.max(1, tileHeight / 3f);
+        for (float ty = top; ty <= bottom; ty += stepY) {
+            float testX = (playerVelocityX > 0) ? newRight : newLeft;
+            if (map.isSolidTileAt(testX, ty)) {
+                canMoveHorizontally = false;
+                if (Debug.isDebugMode()) {
+                    Rect tileRect = getTileRectAtWorld(testX, ty);
+                    collisionRects.add(tileRect);
                 }
             }
         }
-        if (canMoveHorizontally)
+        // Check bottom edge in case of rounding
+        if (canMoveHorizontally) {
+            float testX = (playerVelocityX > 0) ? newRight : newLeft;
+            if (map.isSolidTileAt(testX, bottom)) {
+                canMoveHorizontally = false;
+                if (Debug.isDebugMode()) {
+                    Rect tileRect = getTileRectAtWorld(testX, bottom);
+                    collisionRects.add(tileRect);
+                }
+            }
+        }
+        if (canMoveHorizontally) {
             playerX = nextX;
-        else
+        } else {
+            // Snap to edge of tile
+            if (playerVelocityX > 0) { // moving right
+                int tileX = (int) (newRight / tileWidth);
+                playerX = tileX * tileWidth - collisionOffsetX - playerWidth;
+            } else if (playerVelocityX < 0) { // moving left
+                int tileX = (int) (newLeft / tileWidth);
+                playerX = (tileX + 1) * tileWidth - collisionOffsetX;
+            }
             playerVelocityX = 0;
+        }
 
-        // --- Vertical Collision ---
+        // --- Vertical Collision (sweep along horizontal edge) ---
         boolean canMoveVertically = true;
-        testXs = new float[]{playerX + collisionOffsetX, playerX + collisionOffsetX + playerWidth - 1};
-        testYs = new float[]{nextY + collisionOffsetY + playerHeight - 1};
-        for (float tx : testXs) {
-            for (float ty : testYs) {
-                if (map.isSolidTileAt(tx, ty)) {
+        float left = playerX + collisionOffsetX;
+        float right = playerX + collisionOffsetX + playerWidth - 1;
+        float newTop = nextY + collisionOffsetY;
+        float newBottom = nextY + collisionOffsetY + playerHeight - 1;
+
+        float stepX = Math.max(1, tileWidth / 3f);
+        if (playerVelocityY >= 0) { // Falling
+            for (float tx = left; tx <= right; tx += stepX) {
+                if (map.isSolidTileAt(tx, newBottom)) {
                     canMoveVertically = false;
                     if (Debug.isDebugMode()) {
-                        Rect tileRect = getTileRectAtWorld(tx, ty);
+                        Rect tileRect = getTileRectAtWorld(tx, newBottom);
                         collisionRects.add(tileRect);
                     }
                 }
             }
+            // Check right edge in case of rounding
+            if (canMoveVertically && map.isSolidTileAt(right, newBottom)) {
+                canMoveVertically = false;
+                if (Debug.isDebugMode()) {
+                    Rect tileRect = getTileRectAtWorld(right, newBottom);
+                    collisionRects.add(tileRect);
+                }
+            }
+        } else { // Jumping
+            for (float tx = left; tx <= right; tx += stepX) {
+                if (map.isSolidTileAt(tx, newTop)) {
+                    canMoveVertically = false;
+                    if (Debug.isDebugMode()) {
+                        Rect tileRect = getTileRectAtWorld(tx, newTop);
+                        collisionRects.add(tileRect);
+                    }
+                }
+            }
+            // Check right edge in case of rounding
+            if (canMoveVertically && map.isSolidTileAt(right, newTop)) {
+                canMoveVertically = false;
+                if (Debug.isDebugMode()) {
+                    Rect tileRect = getTileRectAtWorld(right, newTop);
+                    collisionRects.add(tileRect);
+                }
+            }
         }
+
         if (canMoveVertically) {
             playerY = nextY;
         } else {
-            // Snap the collision box bottom to the top of the tile
-            int tileY = (int) ((nextY + collisionOffsetY + playerHeight - 1) / GameConstants.FloorTile.HEIGHT);
-            float tileTop = tileY * GameConstants.FloorTile.HEIGHT;
-            playerY = tileTop - collisionOffsetY - playerHeight;
+            if (playerVelocityY > 0) { // Falling
+                int tileY = (int) (newBottom / tileHeight);
+                float tileTop = tileY * tileHeight;
+                playerY = tileTop - collisionOffsetY - playerHeight;
+                isJumping = false;
+            } else { // Hitting ceiling
+                int tileY = (int) (newTop / tileHeight);
+                float tileBottom = (tileY + 1) * tileHeight;
+                playerY = tileBottom - collisionOffsetY;
+            }
             playerVelocityY = 0;
-            isJumping = false;
         }
     }
 
