@@ -15,7 +15,7 @@ public final class GameConstants {
      * Sets debug mode
      */
     public static final class DebugMode {
-        public static final boolean debugMode = false;
+        public static final boolean debugMode = true;
     }
 
     public static final class Screen {
@@ -51,6 +51,10 @@ public final class GameConstants {
     public static final class Player {
         public static final int FRAME_WIDTH = 32;
         public static final int FRAME_HEIGHT = 48;
+        public static final int PLAYER_WIDTH = 20;
+        public static final int PLAYER_HEIGHT = 46;
+        public static final int PLAYER_OFFSET_X = 6;
+        public static final int PLAYER_OFFSET_Y = 1;
         public static final int SCALE_MULTIPLIER = 6;
         public static final int WIDTH = FRAME_WIDTH * SCALE_MULTIPLIER;
         public static final int HEIGHT = FRAME_HEIGHT * SCALE_MULTIPLIER;

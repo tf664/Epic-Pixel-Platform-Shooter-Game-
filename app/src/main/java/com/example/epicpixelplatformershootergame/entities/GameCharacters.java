@@ -2,6 +2,7 @@ package com.example.epicpixelplatformershootergame.entities;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Rect;
 
 import com.example.epicpixelplatformershootergame.Debug;
 import com.example.epicpixelplatformershootergame.MainActivity;
@@ -59,13 +60,26 @@ public enum GameCharacters implements BitmapMethods {
                 return GameConstants.Player.SCALE_MULTIPLIER;
             case GRUNTTWO:
                 return GameConstants.GruntTwo.SCALE_MULTIPLIER;
-        };
+        }
+        ;
 
         return 0;
     }
 
     public Bitmap getSprite(int yPos, int xPos) {
         return sprites[yPos][xPos];
+    }
+
+    public Rect getCollisionRect(int x, int y) {
+        if (this == PLAYER) {
+            return new Rect(
+                    x + GameConstants.Player.PLAYER_OFFSET_X,
+                    y + GameConstants.Player.PLAYER_OFFSET_Y,
+                    x + GameConstants.Player.PLAYER_OFFSET_X + GameConstants.Player.PLAYER_WIDTH,
+                    y + GameConstants.Player.PLAYER_OFFSET_Y + GameConstants.Player.PLAYER_HEIGHT
+            );
+        }
+        return null;
     }
 
 }
