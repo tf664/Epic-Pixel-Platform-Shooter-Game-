@@ -15,15 +15,15 @@ public class TouchEvents {
     private float xCenterRight = GameConstants.Button.X_RIGHT, yCenterRight = GameConstants.Button.Y_RIGHT;
     private float xCenterJump = GameConstants.Button.X_JUMP, yCenterJump = GameConstants.Button.Y_JUMP;
 
-    private Paint circlePaint;
-    private Paint jumpPaint;
+    boolean leftPressed = false, rightPressed = false, jumpPressed = false;
+
+    private Paint circlePaint; // move to GameConstants?
+    private Paint jumpPaint; // move to GameConstants?
 
     // Track previous button states
-    private boolean prevLeftPressed = false;
-    private boolean prevRightPressed = false;
-    private boolean prevJumpPressed = false;
+    private boolean prevLeftPressed = false, prevRightPressed = false, prevJumpPressed = false;
     private long jumpBufferedAt = 0;
-    private static final long MAX_JUMP_BUFFER_MS = 250; // TODO: GameConstants
+
 
     public TouchEvents(GamePanel gamePanel) {
         this.gamePanel = gamePanel;
@@ -34,21 +34,33 @@ public class TouchEvents {
         jumpPaint.setColor(Color.BLUE);
     }
 
+    /**
+     * Draws the movement buttons on the screen
+     *
+     * @param c Canvas to draw on
+     */
     public void draw(Canvas c) {
         c.drawCircle(xCenterLeft, yCenterLeft, GameConstants.Button.RADIUS, circlePaint);
         c.drawCircle(xCenterRight, yCenterRight, GameConstants.Button.RADIUS, circlePaint);
         c.drawCircle(xCenterJump, yCenterJump, GameConstants.Button.RADIUS, jumpPaint);
     }
 
+    /**
+     * Handles touch events for the movement buttons
+     *
+     * @param event MotionEvent to handle
+     * @return true if the event was handled
+     */
     public boolean touchEvent(MotionEvent event) {
-        boolean leftPressed = false;
-        boolean rightPressed = false;
-        boolean jumpPressed = false;
-
+        // Clear current button states
+        leftPressed = false;
+        rightPressed = false;
+        jumpPressed = false;
+        // Get info about the touch event
         int action = event.getActionMasked();
         int pointerCount = event.getPointerCount();
 
-        // If all fingers are lifted, reset all flags
+        // No touch
         if ((action == MotionEvent.ACTION_UP || action == MotionEvent.ACTION_CANCEL) && pointerCount == 1) {
             gamePanel.setMoveLeft(false);
             gamePanel.setMoveRight(false);
@@ -58,49 +70,38 @@ public class TouchEvents {
             prevJumpPressed = false;
             return true;
         }
-
-        // On pointer up, check remaining pointers
+        // One finger lifter with others remaining on screen
         if (action == MotionEvent.ACTION_POINTER_UP) {
             int upIndex = event.getActionIndex();
             for (int i = 0; i < pointerCount; i++) {
-                if (i == upIndex) continue;
-                float x = event.getX(i);
-                float y = event.getY(i);
-                if (isWithin(x, y, xCenterLeft, yCenterLeft, GameConstants.Button.RADIUS))
-                    leftPressed = true;
-                if (isWithin(x, y, xCenterRight, yCenterRight, GameConstants.Button.RADIUS))
-                    rightPressed = true;
-                if (isWithin(x, y, xCenterJump, yCenterJump, GameConstants.Button.RADIUS))
-                    jumpPressed = true;
+                if (i == upIndex) continue; // skip lifted finger
+                updateButtonPresses(event.getX(i), event.getY(i));
             }
-        } else {
-            // For all other actions, scan all pointers
+        }
+        // Loop through all pointers to register press
+        else {
             for (int i = 0; i < pointerCount; i++) {
-                float x = event.getX(i);
-                float y = event.getY(i);
-                if (isWithin(x, y, xCenterLeft, yCenterLeft, GameConstants.Button.RADIUS))
-                    leftPressed = true;
-                if (isWithin(x, y, xCenterRight, yCenterRight, GameConstants.Button.RADIUS))
-                    rightPressed = true;
-                if (isWithin(x, y, xCenterJump, yCenterJump, GameConstants.Button.RADIUS))
-                    jumpPressed = true;
+                updateButtonPresses(event.getX(i), event.getY(i));
             }
         }
 
-        // Optional: Prioritize right if both are pressed
+        // Prioritize right if both are pressed
         if (leftPressed && rightPressed) {
             leftPressed = false;
             rightPressed = true;
         }
 
+        // Send input to gamePanel, while restricting redundant calls for smoothness
         if (leftPressed != prevLeftPressed) gamePanel.setMoveLeft(leftPressed);
         if (rightPressed != prevRightPressed) gamePanel.setMoveRight(rightPressed);
         if (jumpPressed != prevJumpPressed) gamePanel.setJumpButtonHeld(jumpPressed);
 
+        // Buffer jump input
         if (jumpPressed && !prevJumpPressed) {
-            jumpBufferedAt = System.currentTimeMillis();   // remember this press
+            jumpBufferedAt = System.currentTimeMillis();
         }
 
+        // Update previous button states for next touch event processing
         prevLeftPressed = leftPressed;
         prevRightPressed = rightPressed;
         prevJumpPressed = jumpPressed;
@@ -108,12 +109,21 @@ public class TouchEvents {
         return true;
     }
 
+    private void updateButtonPresses(float x, float y) {
+        if (isWithin(x, y, xCenterLeft, yCenterLeft, GameConstants.Button.RADIUS))
+            leftPressed = true;
+        if (isWithin(x, y, xCenterRight, yCenterRight, GameConstants.Button.RADIUS))
+            rightPressed = true;
+        if (isWithin(x, y, xCenterJump, yCenterJump, GameConstants.Button.RADIUS))
+            jumpPressed = true;
+    }
+
     private boolean isWithin(float x, float y, float centerX, float centerY, float radius) {
         return Math.hypot(x - centerX, y - centerY) <= radius;
     }
 
     public boolean hasBufferedJump() {
-        return (System.currentTimeMillis() - jumpBufferedAt) <= MAX_JUMP_BUFFER_MS
+        return ((System.currentTimeMillis() - jumpBufferedAt) <= GameConstants.Physics.MAX_JUMP_BUFFER_MS)
                 && jumpBufferedAt != 0;
     }
 

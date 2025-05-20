@@ -80,9 +80,10 @@ public final class GameConstants {
 
     public static final class Physics {
         public static final float GRAVITY = 0.5f;
-        public static final float JUMP_STRENGTH = -16f;
+        public static final float JUMP_STRENGTH = -14f;
         public static final float PLAYER_MOVE_SPEED = 10f;
         public static final double ANIMATION_SPEED = 7.5;
+        public static final long MAX_JUMP_BUFFER_MS = 250;
     }
 
     public static int getCollisionOffsetX() {

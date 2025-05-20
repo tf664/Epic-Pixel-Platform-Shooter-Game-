@@ -47,7 +47,7 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
     private Bitmap background_front;
 
     // Jumping Physics
-    private float playerX = 100, playerY = 100;
+    private float playerX = 100, playerY = 100; // Spawn playe // TODO hardcoded
     private float playerVelocityX = 0, playerVelocityY = 0;
     private boolean isJumping = false;
     private boolean jumpButtonHeld = false;
@@ -73,8 +73,8 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
         gameLoop = new GameLoop(this);
         mapManager = new MapManager();
 
-        enemies.add(new Enemy(1000, 330));
-        enemies.add(new Enemy(1500, 330));
+        enemies.add(new Enemy(1000, 330)); // TODO hardcoded
+        enemies.add(new Enemy(1500, 330)); // TODO hardcoded
     }
 
 
