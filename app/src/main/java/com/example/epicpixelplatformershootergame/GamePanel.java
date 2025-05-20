@@ -9,13 +9,13 @@ import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
-import android.graphics.Rect;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
 import androidx.annotation.NonNull;
 
+import com.example.epicpixelplatformershootergame.entities.Enemy;
 import com.example.epicpixelplatformershootergame.entities.GameCharacters;
 import com.example.epicpixelplatformershootergame.environments.MapManager;
 import com.example.epicpixelplatformershootergame.helper.GameConstants;
@@ -31,11 +31,13 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
     private GameLoop gameLoop;
     private TouchEvents touchEvents;
 
-    private int playerAnimationIndexX, playerAnimationIndexY = 0, playerFaceDirection = GameConstants.Facing_Direction.RIGHT;
+    private int playerAnimationIndexX, playerAnimationIndexY;
+    private int playerFaceDirection = GameConstants.Facing_Direction.RIGHT;
     private int gruntTwoAnimationIndexY;
+    private List<Enemy> enemies = new ArrayList<>();
 
     private boolean moveLeft = false, moveRight = false;
-    private int animationFrame;
+    private int playerAnimationFrame;
     private int animationTick;
     private double animationSpeed = GameConstants.Physics.ANIMATION_SPEED;
 
@@ -48,12 +50,12 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
     private float playerX = 100, playerY = 100;
     private float playerVelocityX = 0, playerVelocityY = 0;
     private boolean isJumping = false;
+    private boolean jumpButtonHeld = false;
 
     private final float GRAVITY = GameConstants.Physics.GRAVITY;
     private final float JUMP_STRENGTH = GameConstants.Physics.JUMP_STRENGTH;
 
 
-    private final List<Rect> collisionRects = new ArrayList<>();
     private final PlayerCollisionHandler collisionHandler = new PlayerCollisionHandler();
 
     public GamePanel(Context context) {
@@ -70,6 +72,9 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
 
         gameLoop = new GameLoop(this);
         mapManager = new MapManager();
+
+        enemies.add(new Enemy(1000, 330));
+        enemies.add(new Enemy(1500, 330));
     }
 
 
@@ -130,7 +135,7 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
         mapManager.updateCamera(playerX);
         mapManager.draw(c);
         drawPlayer(c);
-        drawGruntTwo(c);
+        drawEnemies(c);
         touchEvents.draw(c);
         drawDebug(c);
 
@@ -138,12 +143,20 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
     }
 
     public void update(double delta) {
+        tryConsumeJumpBuffer();
         updateAnimation();
         applyGravity();
         handleMovement();
 
         float nextX = clampPlayerPosition(playerX + playerVelocityX);
         float nextY = playerY + playerVelocityY;
+
+        // Update all enemies (patrol logic)
+        for (Enemy enemy : enemies) {
+            float leftBound = enemy.spawnX - 100; // TODO left bounds
+            float rightBound = enemy.spawnX + 100; // TODO right bounds
+            enemy.update(leftBound, rightBound);
+        }
 
         checkPlayerCollision(nextX, nextY);
         mapManager.updateCamera(playerX);
@@ -174,6 +187,9 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
         }
     }
 
+    public void setJumpButtonHeld(boolean held) {
+        this.jumpButtonHeld = held;
+    }
 
     // --- Animation methods ---
     private void updateAnimation() {
@@ -201,17 +217,17 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
     private void setPlayerAnimationRight() {
         int[] rightAnimY = {0, 0, 0, 1};
         int[] rightAnimX = {1, 2, 3, 0};
-        animationFrame = (animationFrame + 1) % rightAnimX.length;
-        playerAnimationIndexY = rightAnimY[animationFrame];
-        playerAnimationIndexX = rightAnimX[animationFrame];
+        playerAnimationFrame = (playerAnimationFrame + 1) % rightAnimX.length;
+        playerAnimationIndexY = rightAnimY[playerAnimationFrame];
+        playerAnimationIndexX = rightAnimX[playerAnimationFrame];
     }
 
     private void setPlayerAnimationLeft() {
         int[] leftAnimY = {1, 1, 2, 2};
         int[] leftAnimX = {2, 3, 0, 1};
-        animationFrame = (animationFrame + 1) % leftAnimX.length;
-        playerAnimationIndexY = leftAnimY[animationFrame];
-        playerAnimationIndexX = leftAnimX[animationFrame];
+        playerAnimationFrame = (playerAnimationFrame + 1) % leftAnimX.length;
+        playerAnimationIndexY = leftAnimY[playerAnimationFrame];
+        playerAnimationIndexX = leftAnimX[playerAnimationFrame];
     }
 
     private void setPlayerAnimationIdle() {
@@ -229,13 +245,11 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
     private void drawBackground(Canvas c) {
         c.drawColor(Color.BLACK);
         c.drawBitmap(background_back, 0, 0, null);
-        if (background_front != null) {
-            int cameraX = mapManager.getCameraX();
-            int bgWidth = background_front.getWidth();
-            int offset = cameraX % bgWidth;
-            for (int x = -offset; x < getWidth(); x += bgWidth)
-                c.drawBitmap(background_front, x, 0, null);
-        }
+        int cameraX = mapManager.getCameraX();
+        int bgWidth = background_front.getWidth();
+        int offset = cameraX % bgWidth;
+        for (int x = -offset; x < getWidth(); x += bgWidth)
+            c.drawBitmap(background_front, x, 0, null);
     }
 
     private void drawPlayer(Canvas c) {
@@ -245,8 +259,17 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
                 playerX - cameraX, playerY + mapOffsetY, null);
     }
 
-    private void drawGruntTwo(Canvas c) {
-        c.drawBitmap(GameCharacters.GRUNTTWO.getSprite(gruntTwoAnimationIndexY, 0), 800, 600, null);
+    private void drawEnemies(Canvas c) {
+        int cameraX = mapManager.getCameraX();
+        int mapOffsetY = mapManager.getMapOffsetY();
+        for (Enemy enemy : enemies) {
+            c.drawBitmap(
+                    GameCharacters.GRUNTTWO.getSprite(gruntTwoAnimationIndexY, 0),
+                    enemy.x - cameraX,
+                    enemy.y + mapOffsetY,
+                    null
+            );
+        }
     }
 
     private void drawDebug(Canvas c) {
@@ -289,9 +312,13 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
     }
 
 
-    // --- priva physics helpers ---
+    // --- private physics helpers ---
     private void applyGravity() {
-        playerVelocityY += GRAVITY;
+        if (playerVelocityY < 0 && jumpButtonHeld)
+            playerVelocityY += GRAVITY * 0.4f; // Less gravity while holding jump
+        else
+            playerVelocityY += GRAVITY; // Normal gravity
+
     }
 
     private void handleMovement() {
@@ -306,6 +333,15 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
     private float clampPlayerPosition(float nextX) {
         int mapPixelWidth = mapManager.getCurrentMap().getArrayWidth() * GameConstants.FloorTile.WIDTH;
         return Math.max(0, Math.min(nextX, mapPixelWidth - GameConstants.Player.WIDTH));
+    }
+
+    private void tryConsumeJumpBuffer() {
+        if (!isJumping && touchEvents.hasBufferedJump()) {
+            playerVelocityY = JUMP_STRENGTH;
+            isJumping = true;
+            touchEvents.clearJumpBuffer();
+        }
+
     }
 }
 

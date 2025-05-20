@@ -17,7 +17,13 @@ public class TouchEvents {
 
     private Paint circlePaint;
     private Paint jumpPaint;
-    private boolean isJumping = false;  // Track whether the jump button was touched
+
+    // Track previous button states
+    private boolean prevLeftPressed = false;
+    private boolean prevRightPressed = false;
+    private boolean prevJumpPressed = false;
+    private long jumpBufferedAt = 0;
+    private static final long MAX_JUMP_BUFFER_MS = 250; // TODO: GameConstants
 
     public TouchEvents(GamePanel gamePanel) {
         this.gamePanel = gamePanel;
@@ -35,48 +41,70 @@ public class TouchEvents {
     }
 
     public boolean touchEvent(MotionEvent event) {
+        boolean leftPressed = false;
+        boolean rightPressed = false;
+        boolean jumpPressed = false;
+
         int action = event.getActionMasked();
-        int pointerIndex = event.getActionIndex();
+        int pointerCount = event.getPointerCount();
 
-        switch (action) {
-            case MotionEvent.ACTION_DOWN:
-            case MotionEvent.ACTION_POINTER_DOWN: {
-                float x = event.getX(pointerIndex);
-                float y = event.getY(pointerIndex);
-                handleTouchDown(x, y);
-                break;
-            }
-
-            case MotionEvent.ACTION_UP:
-            case MotionEvent.ACTION_POINTER_UP: {
-                float x = event.getX(pointerIndex);
-                float y = event.getY(pointerIndex);
-                handleTouchUp(x, y);
-                break;
-            }
-
-            case MotionEvent.ACTION_MOVE:
-                float xMove = event.getX();
-                float yMove = event.getY();
-
-                // Reset movement flags
-                gamePanel.setMoveLeft(false);
-                gamePanel.setMoveRight(false);
-
-                // Move left button
-                if (isWithin(xMove, yMove, xCenterLeft, yCenterLeft, GameConstants.Button.RADIUS)) {
-                    gamePanel.setMoveLeft(true);
-                }
-                // Move right button
-                if (isWithin(xMove, yMove, xCenterRight, yCenterRight, GameConstants.Button.RADIUS)) {
-                    gamePanel.setMoveRight(true);
-                }
-                // Jump button
-                if (isWithin(xMove, yMove, xCenterJump, yCenterJump, GameConstants.Button.RADIUS) && !isJumping) {
-                    gamePanel.setJump(true);  // Trigger jump action
-                }
-                break;
+        // If all fingers are lifted, reset all flags
+        if ((action == MotionEvent.ACTION_UP || action == MotionEvent.ACTION_CANCEL) && pointerCount == 1) {
+            gamePanel.setMoveLeft(false);
+            gamePanel.setMoveRight(false);
+            gamePanel.setJumpButtonHeld(false);
+            prevLeftPressed = false;
+            prevRightPressed = false;
+            prevJumpPressed = false;
+            return true;
         }
+
+        // On pointer up, check remaining pointers
+        if (action == MotionEvent.ACTION_POINTER_UP) {
+            int upIndex = event.getActionIndex();
+            for (int i = 0; i < pointerCount; i++) {
+                if (i == upIndex) continue;
+                float x = event.getX(i);
+                float y = event.getY(i);
+                if (isWithin(x, y, xCenterLeft, yCenterLeft, GameConstants.Button.RADIUS))
+                    leftPressed = true;
+                if (isWithin(x, y, xCenterRight, yCenterRight, GameConstants.Button.RADIUS))
+                    rightPressed = true;
+                if (isWithin(x, y, xCenterJump, yCenterJump, GameConstants.Button.RADIUS))
+                    jumpPressed = true;
+            }
+        } else {
+            // For all other actions, scan all pointers
+            for (int i = 0; i < pointerCount; i++) {
+                float x = event.getX(i);
+                float y = event.getY(i);
+                if (isWithin(x, y, xCenterLeft, yCenterLeft, GameConstants.Button.RADIUS))
+                    leftPressed = true;
+                if (isWithin(x, y, xCenterRight, yCenterRight, GameConstants.Button.RADIUS))
+                    rightPressed = true;
+                if (isWithin(x, y, xCenterJump, yCenterJump, GameConstants.Button.RADIUS))
+                    jumpPressed = true;
+            }
+        }
+
+        // Optional: Prioritize right if both are pressed
+        if (leftPressed && rightPressed) {
+            leftPressed = false;
+            rightPressed = true;
+        }
+
+        if (leftPressed != prevLeftPressed) gamePanel.setMoveLeft(leftPressed);
+        if (rightPressed != prevRightPressed) gamePanel.setMoveRight(rightPressed);
+        if (jumpPressed != prevJumpPressed) gamePanel.setJumpButtonHeld(jumpPressed);
+
+        if (jumpPressed && !prevJumpPressed) {
+            jumpBufferedAt = System.currentTimeMillis();   // remember this press
+        }
+
+        prevLeftPressed = leftPressed;
+        prevRightPressed = rightPressed;
+        prevJumpPressed = jumpPressed;
+
         return true;
     }
 
@@ -84,37 +112,13 @@ public class TouchEvents {
         return Math.hypot(x - centerX, y - centerY) <= radius;
     }
 
-    private void handleTouchDown(float x, float y) {
-        handleMovementButtons(x, y);
-        handleJumpButton(x, y);
+    public boolean hasBufferedJump() {
+        return (System.currentTimeMillis() - jumpBufferedAt) <= MAX_JUMP_BUFFER_MS
+                && jumpBufferedAt != 0;
     }
 
-    private void handleTouchUp(float x, float y) {
-        if (isWithin(x, y, xCenterRight, yCenterRight, GameConstants.Button.RADIUS)) {
-            gamePanel.setMoveRight(false);
-        } else if (isWithin(x, y, xCenterLeft, yCenterLeft, GameConstants.Button.RADIUS)) {
-            gamePanel.setMoveLeft(false);
-        } else if (isWithin(x, y, xCenterJump, yCenterJump, GameConstants.Button.RADIUS)) {
-            gamePanel.setJump(false);
-            isJumping = false;  // Reset jump state after release
-        }
+    public void clearJumpBuffer() {
+        jumpBufferedAt = 0;
     }
-
-    private void handleMovementButtons(float x, float y) {
-        if (isWithin(x, y, xCenterLeft, yCenterLeft, GameConstants.Button.RADIUS)) {
-            gamePanel.setMoveLeft(true);
-        }
-        if (isWithin(x, y, xCenterRight, yCenterRight, GameConstants.Button.RADIUS)) {
-            gamePanel.setMoveRight(true);
-        }
-    }
-
-    private void handleJumpButton(float x, float y) {
-        if (isWithin(x, y, xCenterJump, yCenterJump, GameConstants.Button.RADIUS) && !isJumping) {
-            gamePanel.setJump(true);
-            isJumping = true; // Mark that the jump was initiated
-        }
-    }
-
 
 }

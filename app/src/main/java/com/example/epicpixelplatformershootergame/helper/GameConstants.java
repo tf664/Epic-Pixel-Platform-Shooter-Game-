@@ -41,7 +41,7 @@ public final class GameConstants {
         public static final float Y_LEFT = 800f;
         public static final float X_RIGHT = 500f;
         public static final float Y_RIGHT = 800f;
-        public static final float X_JUMP = 1800f;
+        public static final float X_JUMP = 1900f;
         public static final float Y_JUMP = 800f;
     }
 
