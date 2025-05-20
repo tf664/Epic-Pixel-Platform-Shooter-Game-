@@ -2,6 +2,10 @@ package com.example.epicpixelplatformershootergame.helper;
 
 import android.content.res.Resources;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 /**
  * Uses as a config for constants
  */
@@ -59,6 +63,8 @@ public final class GameConstants {
                 {0, 0, 0, 3, 0, 1, 2, 3, 1, 0, 1, 0, 3, 0, 0, 0, 0, 0, 39, 40, 41, 0, 0, 35, 36, 0, 0, 0},
                 {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 3, 3, 3, 3, 3, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0}
         };
+
+        public static final List<Integer> solidTileIds = Arrays.asList(1, 2, 3, 35, 36);
     }
 
 

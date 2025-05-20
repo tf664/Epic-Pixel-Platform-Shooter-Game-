@@ -29,7 +29,8 @@ public class GameMap {
         if (tileX < 0 || tileY < 0 || tileX >= getArrayWidth() || tileY >= getArrayHeight())
             return false;
 
-        // Excludes air (0) tile from collision
-        return tileIds[tileY][tileX] != 0;
+        // Excludes specific (like air and decoration) tiles from collision
+        int tileId = tileIds[tileY][tileX];
+        return GameConstants.Map.solidTileIds.contains(tileId);
     }
 }
