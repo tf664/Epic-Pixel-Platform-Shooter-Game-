@@ -16,7 +16,7 @@ import android.view.SurfaceView;
 import androidx.annotation.NonNull;
 
 import com.example.epicpixelplatformershootergame.entities.Enemy;
-import com.example.epicpixelplatformershootergame.entities.GameCharacters;
+import com.example.epicpixelplatformershootergame.entities.GameEntityAssets;
 import com.example.epicpixelplatformershootergame.environments.MapManager;
 import com.example.epicpixelplatformershootergame.helper.GameConstants;
 import com.example.epicpixelplatformershootergame.inputs.TouchEvents;
@@ -27,7 +27,7 @@ import java.util.List;
 
 // --- Constructor ---
 public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
-    private Paint redPaint = new Paint(); // change
+    private Paint redPaint = new Paint(); // TODO change
     private GameLoop gameLoop;
     private TouchEvents touchEvents;
 
@@ -39,7 +39,6 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
     private boolean moveLeft = false, moveRight = false;
     private int playerAnimationFrame;
     private int animationTick;
-    private double animationSpeed = GameConstants.Physics.ANIMATION_SPEED;
 
     // Map
     private MapManager mapManager;
@@ -51,10 +50,6 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
     private float playerVelocityX = 0, playerVelocityY = 0;
     private boolean isJumping = false;
     private boolean jumpButtonHeld = false;
-
-    private final float GRAVITY = GameConstants.Physics.GRAVITY;
-    private final float JUMP_STRENGTH = GameConstants.Physics.JUMP_STRENGTH;
-
 
     private final PlayerCollisionHandler collisionHandler = new PlayerCollisionHandler();
 
@@ -180,13 +175,6 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
         playerFaceDirection = GameConstants.Facing_Direction.RIGHT;
     }
 
-    public void setJump(boolean isJumping) {
-        if (!this.isJumping && isJumping) {
-            playerVelocityY = JUMP_STRENGTH;
-            this.isJumping = true;
-        }
-    }
-
     public void setJumpButtonHeld(boolean held) {
         this.jumpButtonHeld = held;
     }
@@ -195,7 +183,7 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
     private void updateAnimation() {
         animationTick++;
 
-        if (animationTick >= animationSpeed) {
+        if (animationTick >= GameConstants.Physics.ANIMATION_SPEED) {
             animationTick = 0;
 
             if (moveRight) {
@@ -255,7 +243,7 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
     private void drawPlayer(Canvas c) {
         int mapOffsetY = mapManager.getMapOffsetY();
         int cameraX = mapManager.getCameraX();
-        c.drawBitmap(GameCharacters.PLAYER.getSprite(playerAnimationIndexY, playerAnimationIndexX),
+        c.drawBitmap(GameEntityAssets.PLAYER.getSprite(playerAnimationIndexY, playerAnimationIndexX),
                 playerX - cameraX, playerY + mapOffsetY, null);
     }
 
@@ -264,7 +252,7 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
         int mapOffsetY = mapManager.getMapOffsetY();
         for (Enemy enemy : enemies) {
             c.drawBitmap(
-                    GameCharacters.GRUNTTWO.getSprite(gruntTwoAnimationIndexY, 0),
+                    GameEntityAssets.GRUNTTWO.getSprite(gruntTwoAnimationIndexY, 0),
                     enemy.x - cameraX,
                     enemy.y + mapOffsetY,
                     null
@@ -315,9 +303,9 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
     // --- private physics helpers ---
     private void applyGravity() {
         if (playerVelocityY < 0 && jumpButtonHeld)
-            playerVelocityY += GRAVITY * 0.4f; // Less gravity while holding jump
+            playerVelocityY += GameConstants.Physics.GRAVITY * GameConstants.Physics.GRAVITY_BOOST_HOLDING;
         else
-            playerVelocityY += GRAVITY; // Normal gravity
+            playerVelocityY += GameConstants.Physics.GRAVITY; // Normal gravity
 
     }
 
@@ -337,7 +325,7 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
 
     private void tryConsumeJumpBuffer() {
         if (!isJumping && touchEvents.hasBufferedJump()) {
-            playerVelocityY = JUMP_STRENGTH;
+            playerVelocityY = GameConstants.Physics.JUMP_STRENGTH;
             isJumping = true;
             touchEvents.clearJumpBuffer();
         }
