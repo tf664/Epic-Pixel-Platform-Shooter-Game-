@@ -81,14 +81,13 @@ public final class GameConstants {
     }
 
     public static final class GruntTwo {
-        public static final int WIDTH = 105;
-        public static final int HEIGHT = 41;
+        public static final int FRAME_WIDTH = 104;
+        public static final int FRAME_HEIGHT = 41;
         public static final int SCALE_MULTIPLIER = 6;
-
         public static final int COLLISION_WIDTH = 25;
         public static final int COLLISION_HEIGHT = 41;
-        public static final int COLLISION_OFFSET_X = 0;  // Align to left edge
-        public static final int COLLISION_OFFSET_Y = 0;  // Adjust if needed vertically
+        public static final int COLLISION_OFFSET_X = 0;
+        public static final int COLLISION_OFFSET_Y = 0;
     }
 
     public static final class Weapon {

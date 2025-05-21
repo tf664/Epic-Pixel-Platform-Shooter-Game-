@@ -75,7 +75,7 @@ public class Debug {
             c.drawRect(left, top, right, bottom, enemyPaint);
         }
 
-        // Draw bullet hit areas
+        // Draw bullet
         float bulletRadius = 10;
         for (Bullet bullet : bullets) {
             if (bullet.active) {

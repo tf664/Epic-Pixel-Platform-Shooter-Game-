@@ -39,6 +39,7 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
     private int gruntTwoAnimationIndexY;
     private List<Enemy> enemies = new ArrayList<>();
     private List<Bullet> bullets = new ArrayList<>();
+    private List<Bullet> enemyBullets = new ArrayList<>();
 
     // Map
     private MapManager mapManager;
@@ -138,6 +139,7 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
 
         player.drawPlayer(c);
         drawBullets(c);
+        drawEnemyBullets(c);
         drawEnemies(c);
 
         drawTimer(c);
@@ -158,12 +160,16 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
 
         // Update all enemies (patrol logic)
         for (Enemy enemy : enemies) {
-            float leftBound = enemy.spawnX - 100; // TODO left bounds
-            float rightBound = enemy.spawnX + 100; // TODO right bounds
-            enemy.update(leftBound, rightBound);
+            enemy.updatePatrol();
+            enemy.updateAnimation();
+            float playerCenterX = player.playerX + GameConstants.Player.WIDTH / 2f;
+            float playerCenterY = player.playerY + GameConstants.Player.HEIGHT / 2f;
+            enemy.tryShoot(enemyBullets, playerCenterX, playerCenterY);
         }
         for (Bullet bullet : bullets) bullet.update();
         bullets.removeIf(b -> !b.active);
+        for (Bullet bullet : enemyBullets) bullet.update();
+        enemyBullets.removeIf(b -> !b.active);
 
         checkPlayerCollision(nextX, nextY);
         mapManager.updateCamera(player.playerX);
@@ -186,6 +192,14 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
                 }
             }
         }
+        // Check collision with player (simple circle-rectangle check)
+        for (Bullet bullet : enemyBullets) {
+            if (bullet.active && checkPlayerHitByEnemyBullet(bullet)) {
+                // TODO: handle player damage or death
+                bullet.active = false;
+            }
+        }
+
         enemies.removeIf(e -> !e.isAlive()); // remove dead enemies
 
         // Timer logic
@@ -230,7 +244,7 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
         int mapOffsetY = mapManager.getMapOffsetY();
         for (Enemy enemy : enemies) {
             c.drawBitmap(
-                    GameEntityAssets.GRUNTTWO.getSprite(gruntTwoAnimationIndexY, 0),
+                    GameEntityAssets.GRUNTTWO.getSprite(enemy.animFrame, 0),
                     enemy.x - cameraX,
                     enemy.y + mapOffsetY,
                     null
@@ -242,6 +256,15 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
         Paint paint = new Paint();
         paint.setColor(Color.YELLOW);
         for (Bullet bullet : bullets) {
+            if (bullet.active)
+                c.drawCircle(bullet.x - mapManager.getCameraX(), bullet.y + mapManager.getMapOffsetY(), 10, paint);
+        }
+    }
+
+    private void drawEnemyBullets(Canvas c) {
+        Paint paint = new Paint();
+        paint.setColor(Color.CYAN);
+        for (Bullet bullet : enemyBullets) {
             if (bullet.active)
                 c.drawCircle(bullet.x - mapManager.getCameraX(), bullet.y + mapManager.getMapOffsetY(), 10, paint);
         }
@@ -290,6 +313,24 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
         player.playerVelocityX = collisionResult.velocityX;
         player.playerVelocityY = collisionResult.velocityY;
         player.isJumping = collisionResult.isJumping;
+    }
+
+    private boolean checkPlayerHitByEnemyBullet(Bullet bullet) {
+        float bulletHitRadius = 6; // TODO GameConstants
+
+        // Use the same collision rect as the debug box
+        float collisionOffsetX = GameConstants.getCollisionOffsetX() * GameConstants.Player.SCALE_MULTIPLIER;
+        float collisionOffsetY = GameConstants.getCollisionOffsetY() * GameConstants.Player.SCALE_MULTIPLIER;
+        float px = player.playerX + collisionOffsetX;
+        float py = player.playerY + collisionOffsetY;
+        float pw = GameConstants.Player.PLAYER_COLLISION_WIDTH * GameConstants.Player.SCALE_MULTIPLIER;
+        float ph = GameConstants.Player.PLAYER_COLLISION_HEIGHT * GameConstants.Player.SCALE_MULTIPLIER;
+
+        float bx = bullet.x;
+        float by = bullet.y;
+
+        return bx + bulletHitRadius > px && bx - bulletHitRadius < px + pw &&
+                by + bulletHitRadius > py && by - bulletHitRadius < py + ph;
     }
 
 

@@ -182,6 +182,5 @@ public class Player {
         float bulletY = playerY + (float) GameConstants.Player.HEIGHT / 2;
         float dir = playerFaceDirection == GameConstants.Facing_Direction.RIGHT ? 1 : -1;
         bullets.add(new Bullet(bulletX, bulletY, bulletSpeed * dir, 0));
-        android.util.Log.d("Player", "Spawned bullet at: " + bulletX + ", " + bulletY);
     }
 }

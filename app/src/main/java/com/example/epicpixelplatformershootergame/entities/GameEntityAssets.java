@@ -11,7 +11,7 @@ import com.example.epicpixelplatformershootergame.helper.interfaces.BitmapMethod
 
 public enum GameEntityAssets implements BitmapMethods {
     PLAYER(R.drawable.player_spritesheet_walking_shooting, GameConstants.Player.FRAME_WIDTH, GameConstants.Player.FRAME_HEIGHT),
-    GRUNTTWO(R.drawable.grunttwo_spritesheet_shooting, GameConstants.GruntTwo.WIDTH, GameConstants.GruntTwo.HEIGHT);
+    GRUNTTWO(R.drawable.grunttwo_spritesheet_shooting, GameConstants.GruntTwo.FRAME_WIDTH, GameConstants.GruntTwo.FRAME_HEIGHT);
 
     private int boxWidth, boxHeight;
     private Bitmap spriteSheet;
