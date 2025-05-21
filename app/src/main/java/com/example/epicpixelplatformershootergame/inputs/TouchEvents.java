@@ -9,7 +9,7 @@ import com.example.epicpixelplatformershootergame.GamePanel;
 import com.example.epicpixelplatformershootergame.helper.GameConstants;
 
 public class TouchEvents {
-    private GamePanel gamePanel;
+    GamePanel gamePanel;
 
     private float xCenterLeft = GameConstants.Button.X_LEFT, yCenterLeft = GameConstants.Button.Y_LEFT;
     private float xCenterRight = GameConstants.Button.X_RIGHT, yCenterRight = GameConstants.Button.Y_RIGHT;
@@ -25,12 +25,12 @@ public class TouchEvents {
 
     // Track previous button states
     private boolean prevLeftPressed = false, prevRightPressed = false, prevJumpPressed = false;
+
+    private long lastShootTime = 0;
+    private static final long SHOOT_COOLDOWN_MS = 600; // TODO MOVE TO GAMECONSTANTS
+
     private long jumpBufferedAt = 0;
-
-    // Track previous shoot button state
-    private boolean prevShootPressed = false;
-    private long shootBufferedAt = 0;
-
+    private int shootBufferCount = 0;
 
     public TouchEvents(GamePanel gamePanel) {
         this.gamePanel = gamePanel;
@@ -114,13 +114,13 @@ public class TouchEvents {
             jumpBufferedAt = System.currentTimeMillis();
         }
 
-        // Handle shoot button press
-        if (shootPressed && !prevShootPressed) {
-            shootBufferedAt = System.currentTimeMillis();
-        }
-        prevShootPressed = shootPressed;
+        // Buffer shoot input
+        long currentTime = System.currentTimeMillis();
+        if (shootPressed && currentTime - lastShootTime >= SHOOT_COOLDOWN_MS) {
+                shootBufferCount++;
+                lastShootTime = currentTime;
+            }
 
-        // Update previous button states for next touch event processing
         prevLeftPressed = leftPressed;
         prevRightPressed = rightPressed;
         prevJumpPressed = jumpPressed;
@@ -153,11 +153,10 @@ public class TouchEvents {
     }
 
     public boolean hasBufferedShoot() {
-        return ((System.currentTimeMillis() - shootBufferedAt) <= 200) && shootBufferedAt != 0;
+        return shootBufferCount > 0;
     }
 
     public void clearShootBuffer() {
-        shootBufferedAt = 0;
+        if (shootBufferCount > 0) shootBufferCount--;
     }
-
 }

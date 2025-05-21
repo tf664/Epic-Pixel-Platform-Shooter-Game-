@@ -47,16 +47,14 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
     private Bitmap background_front;
 
     // Jumping Physics
-    private float playerX = 100, playerY = 100; // Spawn playe // TODO hardcoded
+    private float playerX = 100, playerY = 100; // Spawn player // TODO hardcoded
     private float playerVelocityX = 0, playerVelocityY = 0;
     private boolean isJumping = false;
     private boolean jumpButtonHeld = false;
 
     // Shooting animation fields TODO
     private boolean isShooting = false;
-    private int shootingFrame = 0;
-    private int shootingFrameMax = 2; // Number of shooting frames
-    private int shootingFrameCounter = 0;
+    private boolean pendingShoot = false;
 
     // Timer TODO
     private Typeface pixelFont;
@@ -172,19 +170,16 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
         checkPlayerCollision(nextX, nextY);
         mapManager.updateCamera(playerX);
 
-        if (playerY + GameConstants.Player.HEIGHT >= GameConstants.Screen.SCREENHEIGHT) {
-            playerY = GameConstants.Screen.SCREENHEIGHT - GameConstants.Player.HEIGHT;
-            playerVelocityY = 0;
-            isJumping = false;
-        }
-
         // Shooting animation
         if (!isShooting && touchEvents.hasBufferedShoot()) {
             isShooting = true;
-            shootingFrame = 0;
-            shootingFrameCounter = 0;
+            playerAnimationFrame = 0;
             touchEvents.clearShootBuffer();
+            setPlayerShootingAnimation();
             // TODO: spawn bullet/projectile here
+        } else if (isShooting && touchEvents.hasBufferedShoot()) {
+            pendingShoot = true;
+            touchEvents.clearShootBuffer();
         }
 
         // Timer logic
@@ -202,12 +197,14 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
     //--- Movement methods ---
     public void setMoveLeft(boolean moveLeft) {
         this.moveLeft = moveLeft;
-        playerFaceDirection = GameConstants.Facing_Direction.LEFT;
+        if (moveLeft)
+            playerFaceDirection = GameConstants.Facing_Direction.LEFT;
     }
 
     public void setMoveRight(boolean moveRight) {
         this.moveRight = moveRight;
-        playerFaceDirection = GameConstants.Facing_Direction.RIGHT;
+        if (moveRight)
+            playerFaceDirection = GameConstants.Facing_Direction.RIGHT;
     }
 
     public void setJumpButtonHeld(boolean held) {
@@ -221,14 +218,17 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
         if (animationTick >= GameConstants.Physics.ANIMATION_SPEED) {
             animationTick = 0;
 
+            if (isShooting) {
+                setPlayerShootingAnimation();
+                return;
+            }
             if (moveRight) {
-                playerFaceDirection = GameConstants.Facing_Direction.RIGHT;
                 setPlayerAnimationRight();
             } else if (moveLeft) {
-                playerFaceDirection = GameConstants.Facing_Direction.LEFT;
                 setPlayerAnimationLeft();
-            } else
+            } else {
                 setPlayerAnimationIdle();
+            }
 
             // Grunt Two Animation
             gruntTwoAnimationIndexY++;
@@ -253,6 +253,51 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
         playerAnimationIndexX = leftAnimX[playerAnimationFrame];
     }
 
+    private void setPlayerShootingAnimation() {
+        final int[] rightShootingAnimY = {2, 2, 3};
+        final int[] rightShootingAnimX = {2, 3, 0};
+        final int[] leftShootingAnimY = {3, 3, 3};
+        final int[] leftShootingAnimX = {1, 2, 3};
+
+        int[] animY, animX;
+        if (playerFaceDirection == GameConstants.Facing_Direction.RIGHT) {
+            animY = rightShootingAnimY;
+            animX = rightShootingAnimX;
+        } else {
+            animY = leftShootingAnimY;
+            animX = leftShootingAnimX;
+        }
+
+        if (playerAnimationFrame >= animX.length) {
+            isShooting = false;
+            playerAnimationFrame = 0;
+            setPlayerAnimationIdle();
+            // Immediately start next shot if buffered
+            if (touchEvents.hasBufferedShoot()) {
+                startShooting();
+                touchEvents.clearShootBuffer();
+            }
+            return;
+        }
+        playerAnimationIndexY = animY[playerAnimationFrame];
+        playerAnimationIndexX = animX[playerAnimationFrame];
+        playerAnimationFrame++;
+    }
+
+    private void updateShooting() {
+        if (!isShooting && touchEvents.hasBufferedShoot()) {
+            startShooting();
+            touchEvents.clearShootBuffer();
+        }
+    }
+
+    private void startShooting() {
+        isShooting = true;
+        playerAnimationFrame = 0;
+        setPlayerShootingAnimation();
+        // spawn bullet/projectile here
+    }
+
     private void setPlayerAnimationIdle() {
         if (playerFaceDirection == GameConstants.Facing_Direction.RIGHT) {
             playerAnimationIndexY = 0;
@@ -260,24 +305,6 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
         } else {
             playerAnimationIndexY = 1;
             playerAnimationIndexX = 1;
-        }
-    }
-
-    private void setPlayerShootingAnimation() {
-        if (isShooting) {
-            // Assume shooting frames are at row 3, columns 0 and 1 (adjust as per your spritesheet)
-            playerAnimationIndexY = 3;
-            playerAnimationIndexX = shootingFrame;
-            shootingFrameCounter++;
-            if (shootingFrameCounter > GameConstants.Physics.ANIMATION_SPEED) {
-                shootingFrame++;
-                shootingFrameCounter = 0;
-                if (shootingFrame >= shootingFrameMax) {
-                    isShooting = false;
-                    shootingFrame = 0;
-                }
-            }
-            return; // Skip normal animation while shooting
         }
     }
 
@@ -374,7 +401,7 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
         if (playerVelocityY < 0 && jumpButtonHeld)
             playerVelocityY += GameConstants.Physics.GRAVITY * GameConstants.Physics.GRAVITY_BOOST_HOLDING;
         else
-            playerVelocityY += GameConstants.Physics.GRAVITY; // Normal gravity
+            playerVelocityY += GameConstants.Physics.GRAVITY;
 
     }
 
