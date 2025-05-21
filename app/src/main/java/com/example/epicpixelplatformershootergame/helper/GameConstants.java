@@ -91,7 +91,7 @@ public final class GameConstants {
         public static final float JUMP_STRENGTH = -14f;
         public static final float PLAYER_MOVE_SPEED = 10f;
         public static final float ANIMATION_SPEED = 7.5f;
-        public static final float GRAVITY_BOOST_HOLDING = 0.7f;
+        public static final float GRAVITY_BOOST_HOLDING = 0.45f;
         public static final long MAX_JUMP_BUFFER_MS = 250;
     }
 

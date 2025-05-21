@@ -9,6 +9,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.Typeface;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
@@ -57,6 +58,12 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
     private int shootingFrameMax = 2; // Number of shooting frames
     private int shootingFrameCounter = 0;
 
+    // Timer TODO
+    private Typeface pixelFont;
+    private int levelTimeSeconds = 300; // 300 seconds (5 minutes) // TODO move GameConstants
+    private long timerStartMillis = System.currentTimeMillis();
+    private boolean timerActive = true;
+
     private final PlayerCollisionHandler collisionHandler = new PlayerCollisionHandler();
 
     public GamePanel(Context context) {
@@ -73,6 +80,8 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
 
         gameLoop = new GameLoop(this);
         mapManager = new MapManager();
+
+        pixelFont = Typeface.createFromAsset(context.getAssets(), "fonts/VT323-Regular.ttf");
 
         enemies.add(new Enemy(1000, 330)); // TODO hardcoded
         enemies.add(new Enemy(1500, 330)); // TODO hardcoded
@@ -137,6 +146,7 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
         mapManager.draw(c);
         drawPlayer(c);
         drawEnemies(c);
+        drawTimer(c);
         touchEvents.draw(c);
         drawDebug(c);
 
@@ -175,6 +185,16 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
             shootingFrameCounter = 0;
             touchEvents.clearShootBuffer();
             // TODO: spawn bullet/projectile here
+        }
+
+        // Timer logic
+        if (timerActive) {
+            long elapsed = (System.currentTimeMillis() - timerStartMillis) / 1000;
+            int timeLeft = Math.max(0, levelTimeSeconds - (int) elapsed);
+            if (timeLeft == 0) {
+                timerActive = false;
+                // TODO: handle time up (player dies or game over)
+            }
         }
     }
 
@@ -291,6 +311,22 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
                     null
             );
         }
+    }
+
+    private void drawTimer(Canvas c) {
+        Paint timerPaint = new Paint();
+        timerPaint.setColor(Color.WHITE);
+        timerPaint.setTextSize(100); // Size
+        timerPaint.setFakeBoldText(true);
+        timerPaint.setTypeface(pixelFont); // Font
+
+        float x = 150; // TODO move to GameConstants
+        float y = 150;
+
+        long elapsed = (System.currentTimeMillis() - timerStartMillis) / 1000;
+        int timeLeft = Math.max(0, levelTimeSeconds - (int) elapsed);
+
+        c.drawText("O: " + timeLeft, x, y, timerPaint);
     }
 
     private void drawDebug(Canvas c) {
