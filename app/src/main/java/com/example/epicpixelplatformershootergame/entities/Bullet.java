@@ -7,8 +7,6 @@ public class Bullet {
     public boolean active = true;
     private float distanceTraveled = 0;
 
-
-
     public Bullet(float x, float y, float velocityX, float velocityY) {
         this.x = x;
         this.y = y;
@@ -20,7 +18,7 @@ public class Bullet {
         x += velocityX;
         y += velocityY;
         distanceTraveled += Math.abs(velocityX) + Math.abs(velocityY);
-        if (x < 0 || x > 3000 || y < 0 || y > 1200 || distanceTraveled > GameConstants.Weapon.BULLET_MAX_DISTANCE) {
+        if (distanceTraveled > GameConstants.Weapon.BULLET_MAX_DISTANCE) {
             active = false;
         }
     }

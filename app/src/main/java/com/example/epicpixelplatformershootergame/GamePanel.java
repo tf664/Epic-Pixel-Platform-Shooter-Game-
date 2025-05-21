@@ -20,6 +20,7 @@ import androidx.annotation.NonNull;
 import com.example.epicpixelplatformershootergame.entities.Bullet;
 import com.example.epicpixelplatformershootergame.entities.Enemy;
 import com.example.epicpixelplatformershootergame.entities.GameEntityAssets;
+import com.example.epicpixelplatformershootergame.entities.Player;
 import com.example.epicpixelplatformershootergame.environments.MapManager;
 import com.example.epicpixelplatformershootergame.helper.GameConstants;
 import com.example.epicpixelplatformershootergame.inputs.TouchEvents;
@@ -35,38 +36,25 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
     private GameLoop gameLoop;
     private TouchEvents touchEvents;
 
-    private int playerAnimationIndexX, playerAnimationIndexY;
-    private int playerFaceDirection = GameConstants.Facing_Direction.RIGHT;
     private int gruntTwoAnimationIndexY;
     private List<Enemy> enemies = new ArrayList<>();
     private List<Bullet> bullets = new ArrayList<>();
-
-    private boolean moveLeft = false, moveRight = false;
-    private int playerAnimationFrame;
-    private int animationTick;
 
     // Map
     private MapManager mapManager;
     private Bitmap background_back;
     private Bitmap background_front;
 
-    // Jumping Physics
-    private float playerX = 100, playerY = 100; // Spawn player // TODO hardcoded
-    private float playerVelocityX = 0, playerVelocityY = 0;
-    private boolean isJumping = false;
-    private boolean jumpButtonHeld = false;
-
-    // Shooting animation fields TODO
-    private boolean isShooting = false;
-    private boolean pendingShoot = false;
-
-    // Timer TODO
+    // Timer
     private Typeface pixelFont;
     private int levelTimeSeconds = 300; // 300 seconds (5 minutes) // TODO move GameConstants
     private long timerStartMillis = System.currentTimeMillis();
     private boolean timerActive = true;
 
     private final PlayerCollisionHandler collisionHandler = new PlayerCollisionHandler();
+
+    private Player player;
+
 
     public GamePanel(Context context) {
         super(context);
@@ -85,6 +73,7 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
 
         pixelFont = Typeface.createFromAsset(context.getAssets(), "fonts/VT323-Regular.ttf");
 
+        player = new Player(touchEvents, mapManager, bullets);
         enemies.add(new Enemy(1000, 330)); // TODO hardcoded
         enemies.add(new Enemy(1500, 330)); // TODO hardcoded
     }
@@ -144,10 +133,10 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
         if (c == null) return;
 
         drawBackground(c);
-        mapManager.updateCamera(playerX);
+        mapManager.updateCamera(player.playerX);
         mapManager.draw(c);
 
-        drawPlayer(c);
+        player.drawPlayer(c);
         drawBullets(c);
         drawEnemies(c);
 
@@ -159,13 +148,13 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
     }
 
     public void update(double delta) {
-        tryConsumeJumpBuffer();
-        updateAnimation();
-        applyGravity();
+        player.tryConsumeJumpBuffer();
+        player.updateAnimation();
+        player.applyGravity();
         handleMovement();
 
-        float nextX = clampPlayerPosition(playerX + playerVelocityX);
-        float nextY = playerY + playerVelocityY;
+        float nextX = player.clampPlayerPosition(player.playerX + player.playerVelocityX);
+        float nextY = player.playerY + player.playerVelocityY;
 
         // Update all enemies (patrol logic)
         for (Enemy enemy : enemies) {
@@ -177,17 +166,16 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
         bullets.removeIf(b -> !b.active);
 
         checkPlayerCollision(nextX, nextY);
-        mapManager.updateCamera(playerX);
+        mapManager.updateCamera(player.playerX);
 
         // Shooting animation
-        if (!isShooting && touchEvents.hasBufferedShoot()) {
-            isShooting = true;
-            playerAnimationFrame = 0;
+        if (!player.isShooting && touchEvents.hasBufferedShoot()) {
+            player.isShooting = true;
+            player.playerAnimationFrame = 0;
             touchEvents.clearShootBuffer();
-            setPlayerShootingAnimation();
-            // TODO: spawn bullet/projectile here
-        } else if (isShooting && touchEvents.hasBufferedShoot()) {
-            pendingShoot = true;
+            player.setPlayerShootingAnimation();
+        } else if (player.isShooting && touchEvents.hasBufferedShoot()) {
+            player.pendingShoot = true;
             touchEvents.clearShootBuffer();
         }
         for (Bullet bullet : bullets) {
@@ -200,7 +188,7 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
         }
         enemies.removeIf(e -> !e.isAlive()); // remove dead enemies
 
-        // Timer logicf
+        // Timer logic
         if (timerActive) {
             long elapsed = (System.currentTimeMillis() - timerStartMillis) / 1000;
             int timeLeft = Math.max(0, levelTimeSeconds - (int) elapsed);
@@ -211,115 +199,6 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
         }
     }
 
-
-    //--- Movement methods ---
-    public void setMoveLeft(boolean moveLeft) {
-        this.moveLeft = moveLeft;
-        if (moveLeft)
-            playerFaceDirection = GameConstants.Facing_Direction.LEFT;
-    }
-
-    public void setMoveRight(boolean moveRight) {
-        this.moveRight = moveRight;
-        if (moveRight)
-            playerFaceDirection = GameConstants.Facing_Direction.RIGHT;
-    }
-
-    public void setJumpButtonHeld(boolean held) {
-        this.jumpButtonHeld = held;
-    }
-
-    // --- Animation methods ---
-    private void updateAnimation() {
-        animationTick++;
-
-        if (animationTick >= GameConstants.Physics.ANIMATION_SPEED) {
-            animationTick = 0;
-
-            if (isShooting) {
-                setPlayerShootingAnimation();
-                return;
-            }
-            if (moveRight) {
-                setPlayerAnimationRight();
-            } else if (moveLeft) {
-                setPlayerAnimationLeft();
-            } else {
-                setPlayerAnimationIdle();
-            }
-
-            // Grunt Two Animation
-            gruntTwoAnimationIndexY++;
-            if (gruntTwoAnimationIndexY >= 58)
-                gruntTwoAnimationIndexY = 0;
-        }
-    }
-
-    private void setPlayerAnimationRight() {
-        int[] rightAnimY = {0, 0, 0, 1};
-        int[] rightAnimX = {1, 2, 3, 0};
-        playerAnimationFrame = (playerAnimationFrame + 1) % rightAnimX.length;
-        playerAnimationIndexY = rightAnimY[playerAnimationFrame];
-        playerAnimationIndexX = rightAnimX[playerAnimationFrame];
-    }
-
-    private void setPlayerAnimationLeft() {
-        int[] leftAnimY = {1, 1, 2, 2};
-        int[] leftAnimX = {2, 3, 0, 1};
-        playerAnimationFrame = (playerAnimationFrame + 1) % leftAnimX.length;
-        playerAnimationIndexY = leftAnimY[playerAnimationFrame];
-        playerAnimationIndexX = leftAnimX[playerAnimationFrame];
-    }
-
-    private void setPlayerShootingAnimation() {
-        final int[] rightShootingAnimY = {2, 2, 3};
-        final int[] rightShootingAnimX = {2, 3, 0};
-        final int[] leftShootingAnimY = {3, 3, 3};
-        final int[] leftShootingAnimX = {1, 2, 3};
-
-        int[] animY, animX;
-        if (playerFaceDirection == GameConstants.Facing_Direction.RIGHT) {
-            animY = rightShootingAnimY;
-            animX = rightShootingAnimX;
-        } else {
-            animY = leftShootingAnimY;
-            animX = leftShootingAnimX;
-        }
-
-        if (playerAnimationFrame == 0)
-            spawnBullet();
-
-        if (playerAnimationFrame >= animX.length) {
-            isShooting = false;
-            playerAnimationFrame = 0;
-            setPlayerAnimationIdle();
-            // Immediately start next shot if buffered
-            if (touchEvents.hasBufferedShoot()) {
-                startShooting();
-                touchEvents.clearShootBuffer();
-            }
-            return;
-        }
-        playerAnimationIndexY = animY[playerAnimationFrame];
-        playerAnimationIndexX = animX[playerAnimationFrame];
-        playerAnimationFrame++;
-    }
-
-    private void startShooting() {
-        isShooting = true;
-        playerAnimationFrame = 0;
-        setPlayerShootingAnimation();
-    }
-
-    private void setPlayerAnimationIdle() {
-        if (playerFaceDirection == GameConstants.Facing_Direction.RIGHT) {
-            playerAnimationIndexY = 0;
-            playerAnimationIndexX = 0;
-        } else {
-            playerAnimationIndexY = 1;
-            playerAnimationIndexX = 1;
-        }
-    }
 
     private boolean checkBulletPenetration(Bullet bullet, Enemy enemy) {
         float bulletRadius = 10;
@@ -335,16 +214,6 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
                 bulletBottom > enemyRect.top && bulletTop < enemyRect.bottom;
     }
 
-    private void spawnBullet() {
-        float bulletSpeed = 20f;
-        float bulletX = playerX + (float) GameConstants.Player.WIDTH / 2;
-        float bulletY = playerY + (float) GameConstants.Player.HEIGHT / 2;
-        float dir = playerFaceDirection == GameConstants.Facing_Direction.RIGHT ? 1 : -1;
-        bullets.add(new Bullet(bulletX, bulletY, bulletSpeed * dir, 0));
-        android.util.Log.d("GamePanel", "Spawned bullet at: " + bulletX + ", " + bulletY);
-    }
-
-
     // --- Drawing methods ---
     private void drawBackground(Canvas c) {
         c.drawColor(Color.BLACK);
@@ -354,13 +223,6 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
         int offset = cameraX % bgWidth;
         for (int x = -offset; x < getWidth(); x += bgWidth)
             c.drawBitmap(background_front, x, 0, null);
-    }
-
-    private void drawPlayer(Canvas c) {
-        int mapOffsetY = mapManager.getMapOffsetY();
-        int cameraX = mapManager.getCameraX();
-        c.drawBitmap(GameEntityAssets.PLAYER.getSprite(playerAnimationIndexY, playerAnimationIndexX),
-                playerX - cameraX, playerY + mapOffsetY, null);
     }
 
     private void drawEnemies(Canvas c) {
@@ -407,8 +269,8 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
             float collisionOffsetY = GameConstants.getCollisionOffsetY() * GameConstants.Player.SCALE_MULTIPLIER;
             Debug.drawDebugPlayer(
                     c,
-                    playerX - mapManager.getCameraX() + collisionOffsetX,
-                    playerY + mapManager.getMapOffsetY() + collisionOffsetY,
+                    player.playerX - mapManager.getCameraX() + collisionOffsetX,
+                    player.playerY + mapManager.getMapOffsetY() + collisionOffsetY,
                     GameConstants.Player.PLAYER_COLLISION_WIDTH * GameConstants.Player.SCALE_MULTIPLIER,
                     GameConstants.Player.PLAYER_COLLISION_HEIGHT * GameConstants.Player.SCALE_MULTIPLIER
             );
@@ -420,14 +282,14 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
     // --- Collision detection ---
     public void checkPlayerCollision(float nextX, float nextY) {
         PlayerCollisionHandler.PlayerCollisionResult collisionResult = collisionHandler.checkCollision(
-                mapManager.getCurrentMap(), playerY,
+                mapManager.getCurrentMap(), player.playerY,
                 nextX, nextY,
-                playerVelocityX, playerVelocityY);
-        playerX = collisionResult.x;
-        playerY = collisionResult.y;
-        playerVelocityX = collisionResult.velocityX;
-        playerVelocityY = collisionResult.velocityY;
-        isJumping = collisionResult.isJumping;
+                player.playerVelocityX, player.playerVelocityY);
+        player.playerX = collisionResult.x;
+        player.playerY = collisionResult.y;
+        player.playerVelocityX = collisionResult.velocityX;
+        player.playerVelocityY = collisionResult.velocityY;
+        player.isJumping = collisionResult.isJumping;
     }
 
 
@@ -442,28 +304,13 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
         background_front = Bitmap.createScaledBitmap(background_front, GAME_WIDTH, GAME_HEIGHT, true);
     }
 
-
-    // --- private physics helpers ---
-    private void applyGravity() {
-        if (playerVelocityY < 0 && jumpButtonHeld)
-            playerVelocityY += GameConstants.Physics.GRAVITY * GameConstants.Physics.GRAVITY_BOOST_HOLDING;
-        else
-            playerVelocityY += GameConstants.Physics.GRAVITY;
-
-    }
-
     private void handleMovement() {
         float moveSpeed = GameConstants.Physics.PLAYER_MOVE_SPEED;
-        playerVelocityX = 0;
-        if (moveLeft)
-            playerVelocityX = -moveSpeed;
-        else if (moveRight)
-            playerVelocityX = moveSpeed;
-    }
-
-    private float clampPlayerPosition(float nextX) {
-        int mapPixelWidth = mapManager.getCurrentMap().getArrayWidth() * GameConstants.FloorTile.WIDTH;
-        return Math.max(0, Math.min(nextX, mapPixelWidth - GameConstants.Player.WIDTH));
+        player.playerVelocityX = 0;
+        if (player.moveLeft)
+            player.playerVelocityX = -moveSpeed;
+        else if (player.moveRight)
+            player.playerVelocityX = moveSpeed;
     }
 
     public static RectF getScaledCollisionRect(Enemy enemy) {
@@ -479,11 +326,22 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
         return new RectF(left, top, left + width, top + height);
     }
 
-    private void tryConsumeJumpBuffer() {
-        if (!isJumping && touchEvents.hasBufferedJump()) {
-            playerVelocityY = GameConstants.Physics.JUMP_STRENGTH;
-            isJumping = true;
-            touchEvents.clearJumpBuffer();
+    // --- Setters senders ---
+    public void setMoveLeft(boolean moveLeft) {
+        if (player != null) {
+            player.setMoveLeft(moveLeft);
+        }
+    }
+
+    public void setMoveRight(boolean moveRight) {
+        if (player != null) {
+            player.setMoveRight(moveRight);
+        }
+    }
+
+    public void setJumpButtonHeld(boolean held) {
+        if (player != null) {
+            player.setJumpButtonHeld(held);
         }
     }
 }
