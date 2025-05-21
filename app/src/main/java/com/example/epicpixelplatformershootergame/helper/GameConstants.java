@@ -43,6 +43,8 @@ public final class GameConstants {
         public static final float Y_RIGHT = 800f;
         public static final float X_JUMP = 1900f;
         public static final float Y_JUMP = 800f;
+        public static final float X_SHOOT = 2100f;
+        public static final float Y_SHOOT = 700f;
     }
 
     public static final class FloorTile {
@@ -78,6 +80,12 @@ public final class GameConstants {
         public static final int HEIGHT = FRAME_HEIGHT * SCALE_MULTIPLIER;
     }
 
+    public static final class GruntTwo {
+        public static final int WIDTH = 105;
+        public static final int HEIGHT = 41;
+        public static final int SCALE_MULTIPLIER = 6;
+    }
+
     public static final class Physics {
         public static final float GRAVITY = 0.5f;
         public static final float JUMP_STRENGTH = -14f;
@@ -95,10 +103,5 @@ public final class GameConstants {
         return (Player.FRAME_HEIGHT - Player.PLAYER_COLLISION_HEIGHT) / 2;
     }
 
-    public static final class GruntTwo {
-        public static final int WIDTH = 105;
-        public static final int HEIGHT = 41;
-        public static final int SCALE_MULTIPLIER = 6;
-    }
 }
 

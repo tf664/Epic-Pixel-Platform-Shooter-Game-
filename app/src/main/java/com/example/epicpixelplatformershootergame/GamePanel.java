@@ -51,6 +51,12 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
     private boolean isJumping = false;
     private boolean jumpButtonHeld = false;
 
+    // Shooting animation fields TODO
+    private boolean isShooting = false;
+    private int shootingFrame = 0;
+    private int shootingFrameMax = 2; // Number of shooting frames
+    private int shootingFrameCounter = 0;
+
     private final PlayerCollisionHandler collisionHandler = new PlayerCollisionHandler();
 
     public GamePanel(Context context) {
@@ -161,6 +167,15 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
             playerVelocityY = 0;
             isJumping = false;
         }
+
+        // Shooting animation
+        if (!isShooting && touchEvents.hasBufferedShoot()) {
+            isShooting = true;
+            shootingFrame = 0;
+            shootingFrameCounter = 0;
+            touchEvents.clearShootBuffer();
+            // TODO: spawn bullet/projectile here
+        }
     }
 
 
@@ -225,6 +240,24 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
         } else {
             playerAnimationIndexY = 1;
             playerAnimationIndexX = 1;
+        }
+    }
+
+    private void setPlayerShootingAnimation() {
+        if (isShooting) {
+            // Assume shooting frames are at row 3, columns 0 and 1 (adjust as per your spritesheet)
+            playerAnimationIndexY = 3;
+            playerAnimationIndexX = shootingFrame;
+            shootingFrameCounter++;
+            if (shootingFrameCounter > GameConstants.Physics.ANIMATION_SPEED) {
+                shootingFrame++;
+                shootingFrameCounter = 0;
+                if (shootingFrame >= shootingFrameMax) {
+                    isShooting = false;
+                    shootingFrame = 0;
+                }
+            }
+            return; // Skip normal animation while shooting
         }
     }
 

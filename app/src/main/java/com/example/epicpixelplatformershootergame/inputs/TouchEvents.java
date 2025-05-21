@@ -14,24 +14,34 @@ public class TouchEvents {
     private float xCenterLeft = GameConstants.Button.X_LEFT, yCenterLeft = GameConstants.Button.Y_LEFT;
     private float xCenterRight = GameConstants.Button.X_RIGHT, yCenterRight = GameConstants.Button.Y_RIGHT;
     private float xCenterJump = GameConstants.Button.X_JUMP, yCenterJump = GameConstants.Button.Y_JUMP;
+    private float xCenterShoot = GameConstants.Button.X_SHOOT, yCenterShoot = GameConstants.Button.Y_SHOOT;
 
-    boolean leftPressed = false, rightPressed = false, jumpPressed = false;
+    boolean leftPressed = false, rightPressed = false, jumpPressed = false, shootPressed = false;
 
-    private Paint circlePaint; // move to GameConstants?
-    private Paint jumpPaint; // move to GameConstants?
+    // TODO make button design
+    private Paint circlePaint;
+    private Paint jumpPaint;
+    private Paint shootPaint;
 
     // Track previous button states
     private boolean prevLeftPressed = false, prevRightPressed = false, prevJumpPressed = false;
     private long jumpBufferedAt = 0;
 
+    // Track previous shoot button state
+    private boolean prevShootPressed = false;
+    private long shootBufferedAt = 0;
+
 
     public TouchEvents(GamePanel gamePanel) {
         this.gamePanel = gamePanel;
 
+        // TODO make button design
         circlePaint = new Paint();
         circlePaint.setColor(Color.RED);
         jumpPaint = new Paint();
         jumpPaint.setColor(Color.BLUE);
+        shootPaint = new Paint();
+        shootPaint.setColor(Color.YELLOW);
     }
 
     /**
@@ -43,6 +53,7 @@ public class TouchEvents {
         c.drawCircle(xCenterLeft, yCenterLeft, GameConstants.Button.RADIUS, circlePaint);
         c.drawCircle(xCenterRight, yCenterRight, GameConstants.Button.RADIUS, circlePaint);
         c.drawCircle(xCenterJump, yCenterJump, GameConstants.Button.RADIUS, jumpPaint);
+        c.drawCircle(xCenterShoot, yCenterShoot, GameConstants.Button.RADIUS, shootPaint);
     }
 
     /**
@@ -56,6 +67,8 @@ public class TouchEvents {
         leftPressed = false;
         rightPressed = false;
         jumpPressed = false;
+        shootPressed = false;
+
         // Get info about the touch event
         int action = event.getActionMasked();
         int pointerCount = event.getPointerCount();
@@ -101,6 +114,12 @@ public class TouchEvents {
             jumpBufferedAt = System.currentTimeMillis();
         }
 
+        // Handle shoot button press
+        if (shootPressed && !prevShootPressed) {
+            shootBufferedAt = System.currentTimeMillis();
+        }
+        prevShootPressed = shootPressed;
+
         // Update previous button states for next touch event processing
         prevLeftPressed = leftPressed;
         prevRightPressed = rightPressed;
@@ -116,6 +135,8 @@ public class TouchEvents {
             rightPressed = true;
         if (isWithin(x, y, xCenterJump, yCenterJump, GameConstants.Button.RADIUS))
             jumpPressed = true;
+        if (isWithin(x, y, xCenterShoot, yCenterShoot, GameConstants.Button.RADIUS))
+            shootPressed = true;
     }
 
     private boolean isWithin(float x, float y, float centerX, float centerY, float radius) {
@@ -129,6 +150,14 @@ public class TouchEvents {
 
     public void clearJumpBuffer() {
         jumpBufferedAt = 0;
+    }
+
+    public boolean hasBufferedShoot() {
+        return ((System.currentTimeMillis() - shootBufferedAt) <= 200) && shootBufferedAt != 0;
+    }
+
+    public void clearShootBuffer() {
+        shootBufferedAt = 0;
     }
 
 }
