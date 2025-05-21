@@ -1,5 +1,7 @@
 package com.example.epicpixelplatformershootergame;
 
+import com.example.epicpixelplatformershootergame.helper.GameConstants;
+
 public class GameLoop implements Runnable {
     private Thread gameThread;
     private GamePanel gamePanel;
@@ -37,10 +39,12 @@ public class GameLoop implements Runnable {
                 }
             }
 
-            if (now - lastFPSCheck >= 1000) {
-                System.out.println("FPS: " + fps);
-                fps = 0;
-                lastFPSCheck += 1000;
+            if (GameConstants.DebugMode.DEBUG_MODE) {
+                if (now - lastFPSCheck >= 1000) {
+                    System.out.println("FPS: " + fps);
+                    fps = 0;
+                    lastFPSCheck += 1000;
+                }
             }
         }
     }

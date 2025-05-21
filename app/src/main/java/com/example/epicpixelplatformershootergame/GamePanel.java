@@ -9,6 +9,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.RectF;
 import android.graphics.Typeface;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
@@ -16,6 +17,7 @@ import android.view.SurfaceView;
 
 import androidx.annotation.NonNull;
 
+import com.example.epicpixelplatformershootergame.entities.Bullet;
 import com.example.epicpixelplatformershootergame.entities.Enemy;
 import com.example.epicpixelplatformershootergame.entities.GameEntityAssets;
 import com.example.epicpixelplatformershootergame.environments.MapManager;
@@ -27,6 +29,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 // --- Constructor ---
+
 public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
     private Paint redPaint = new Paint(); // TODO change
     private GameLoop gameLoop;
@@ -36,6 +39,7 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
     private int playerFaceDirection = GameConstants.Facing_Direction.RIGHT;
     private int gruntTwoAnimationIndexY;
     private List<Enemy> enemies = new ArrayList<>();
+    private List<Bullet> bullets = new ArrayList<>();
 
     private boolean moveLeft = false, moveRight = false;
     private int playerAnimationFrame;
@@ -142,11 +146,14 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
         drawBackground(c);
         mapManager.updateCamera(playerX);
         mapManager.draw(c);
+
         drawPlayer(c);
+        drawBullets(c);
         drawEnemies(c);
+
         drawTimer(c);
-        touchEvents.draw(c);
         drawDebug(c);
+        touchEvents.draw(c);
 
         surfaceHolder.unlockCanvasAndPost(c);
     }
@@ -166,6 +173,8 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
             float rightBound = enemy.spawnX + 100; // TODO right bounds
             enemy.update(leftBound, rightBound);
         }
+        for (Bullet bullet : bullets) bullet.update();
+        bullets.removeIf(b -> !b.active);
 
         checkPlayerCollision(nextX, nextY);
         mapManager.updateCamera(playerX);
@@ -181,8 +190,17 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
             pendingShoot = true;
             touchEvents.clearShootBuffer();
         }
+        for (Bullet bullet : bullets) {
+            for (Enemy enemy : enemies) {
+                if (bullet.active && enemy.isAlive() && checkBulletPenetration(bullet, enemy)) {
+                    enemy.takeDamage(1);
+                    bullet.active = false;
+                }
+            }
+        }
+        enemies.removeIf(e -> !e.isAlive()); // remove dead enemies
 
-        // Timer logic
+        // Timer logicf
         if (timerActive) {
             long elapsed = (System.currentTimeMillis() - timerStartMillis) / 1000;
             int timeLeft = Math.max(0, levelTimeSeconds - (int) elapsed);
@@ -268,6 +286,9 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
             animX = leftShootingAnimX;
         }
 
+        if (playerAnimationFrame == 0)
+            spawnBullet();
+
         if (playerAnimationFrame >= animX.length) {
             isShooting = false;
             playerAnimationFrame = 0;
@@ -284,18 +305,10 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
         playerAnimationFrame++;
     }
 
-    private void updateShooting() {
-        if (!isShooting && touchEvents.hasBufferedShoot()) {
-            startShooting();
-            touchEvents.clearShootBuffer();
-        }
-    }
-
     private void startShooting() {
         isShooting = true;
         playerAnimationFrame = 0;
         setPlayerShootingAnimation();
-        // spawn bullet/projectile here
     }
 
     private void setPlayerAnimationIdle() {
@@ -306,6 +319,29 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
             playerAnimationIndexY = 1;
             playerAnimationIndexX = 1;
         }
+    }
+
+    private boolean checkBulletPenetration(Bullet bullet, Enemy enemy) {
+        float bulletRadius = 10;
+
+        float bulletLeft = bullet.x - bulletRadius;
+        float bulletRight = bullet.x + bulletRadius;
+        float bulletTop = bullet.y - bulletRadius;
+        float bulletBottom = bullet.y + bulletRadius;
+
+        RectF enemyRect = getScaledCollisionRect(enemy);
+
+        return bulletRight > enemyRect.left && bulletLeft < enemyRect.right &&
+                bulletBottom > enemyRect.top && bulletTop < enemyRect.bottom;
+    }
+
+    private void spawnBullet() {
+        float bulletSpeed = 20f;
+        float bulletX = playerX + (float) GameConstants.Player.WIDTH / 2;
+        float bulletY = playerY + (float) GameConstants.Player.HEIGHT / 2;
+        float dir = playerFaceDirection == GameConstants.Facing_Direction.RIGHT ? 1 : -1;
+        bullets.add(new Bullet(bulletX, bulletY, bulletSpeed * dir, 0));
+        android.util.Log.d("GamePanel", "Spawned bullet at: " + bulletX + ", " + bulletY);
     }
 
 
@@ -340,6 +376,15 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
         }
     }
 
+    private void drawBullets(Canvas c) {
+        Paint paint = new Paint();
+        paint.setColor(Color.YELLOW);
+        for (Bullet bullet : bullets) {
+            if (bullet.active)
+                c.drawCircle(bullet.x - mapManager.getCameraX(), bullet.y + mapManager.getMapOffsetY(), 10, paint);
+        }
+    }
+
     private void drawTimer(Canvas c) {
         Paint timerPaint = new Paint();
         timerPaint.setColor(Color.WHITE);
@@ -367,6 +412,7 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
                     GameConstants.Player.PLAYER_COLLISION_WIDTH * GameConstants.Player.SCALE_MULTIPLIER,
                     GameConstants.Player.PLAYER_COLLISION_HEIGHT * GameConstants.Player.SCALE_MULTIPLIER
             );
+            Debug.drawDebugHitAreas(c, enemies, bullets, mapManager.getCameraX(), mapManager.getMapOffsetY());
         }
     }
 
@@ -383,6 +429,7 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
         playerVelocityY = collisionResult.velocityY;
         isJumping = collisionResult.isJumping;
     }
+
 
     // --- private resource loading
     private void loadBackgrounds(Context context) {
@@ -419,13 +466,25 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
         return Math.max(0, Math.min(nextX, mapPixelWidth - GameConstants.Player.WIDTH));
     }
 
+    public static RectF getScaledCollisionRect(Enemy enemy) {
+        float scale = GameConstants.GruntTwo.SCALE_MULTIPLIER;
+
+        float offsetX = GameConstants.GruntTwo.COLLISION_OFFSET_X * scale;
+        float offsetY = GameConstants.GruntTwo.COLLISION_OFFSET_Y * scale;
+        float width = GameConstants.GruntTwo.COLLISION_WIDTH * scale;
+        float height = GameConstants.GruntTwo.COLLISION_HEIGHT * scale;
+
+        float left = enemy.x + offsetX;
+        float top = enemy.y + offsetY;
+        return new RectF(left, top, left + width, top + height);
+    }
+
     private void tryConsumeJumpBuffer() {
         if (!isJumping && touchEvents.hasBufferedJump()) {
             playerVelocityY = GameConstants.Physics.JUMP_STRENGTH;
             isJumping = true;
             touchEvents.clearJumpBuffer();
         }
-
     }
 }
 
