@@ -19,7 +19,7 @@ public class Player {
     public int playerAnimationFrame;
     public int animationTick;
 
-    public float playerX = 100, playerY = 100;
+    public float playerX = GameConstants.Player.START_X, playerY = GameConstants.Player.START_Y;
     public float playerVelocityX = 0, playerVelocityY = 0;
     public boolean isJumping = false;
     public boolean jumpButtonHeld = false;
@@ -85,7 +85,6 @@ public class Player {
         playerAnimationIndexY = rightAnimY[playerAnimationFrame];
         playerAnimationIndexX = rightAnimX[playerAnimationFrame];
     }
-
     public void setPlayerAnimationLeft() {
         int[] leftAnimY = {1, 1, 2, 2};
         int[] leftAnimX = {2, 3, 0, 1};
@@ -93,7 +92,6 @@ public class Player {
         playerAnimationIndexY = leftAnimY[playerAnimationFrame];
         playerAnimationIndexX = leftAnimX[playerAnimationFrame];
     }
-
     public void setPlayerShootingAnimation() {
         final int[] rightShootingAnimY = {2, 2, 3};
         final int[] rightShootingAnimX = {2, 3, 0};

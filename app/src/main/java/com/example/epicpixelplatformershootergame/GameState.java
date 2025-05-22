@@ -18,7 +18,7 @@ public class GameState {
     private Bitmap hudSheet;
 
     // Timer
-    private int levelTimeSeconds = 300;
+    private int levelTimeSeconds = 100; // GameConstants
     private long timerStartMillis = System.currentTimeMillis();
     private boolean timerActive = true;
     private Bitmap clockIcon;
@@ -89,7 +89,7 @@ public class GameState {
 
         // Load hud.png and extract the clock icon
         hudSheet = BitmapFactory.decodeResource(context.getResources(), R.drawable.hud, options);
-        int columns = 6; // TODO gamestate
+        int columns = 6; // TODO GameConstants
         int rows = 2;
         int iconWidth = hudSheet.getWidth() / columns;
         int iconHeight = hudSheet.getHeight() / rows;
@@ -131,7 +131,7 @@ public class GameState {
 
 
     public void drawTimer(Canvas c) {
-        int iconSize = 140; // TODO Move scale as needed
+        int iconSize = 140; // TODO GameConstants
         float x = GameConstants.Screen.SCREENWIDTH - 200;
         float y = 150;
 

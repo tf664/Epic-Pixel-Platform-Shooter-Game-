@@ -18,13 +18,11 @@ public enum GameEntityAssets implements BitmapMethods {
     private Bitmap[][] sprites;
 
     GameEntityAssets(int resId, int boxWidth, int boxHeight) {
+        options.inScaled = false;
         this.boxWidth = boxWidth;
         this.boxHeight = boxHeight;
 
-        options.inScaled = false;
-
         spriteSheet = BitmapFactory.decodeResource(MainActivity.getGameContext().getResources(), resId, options);
-
         int columns = Math.max(1, spriteSheet.getWidth() / boxWidth);
         int rows = Math.max(1, spriteSheet.getHeight() / boxHeight);
 

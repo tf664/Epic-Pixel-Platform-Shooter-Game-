@@ -24,33 +24,31 @@ public class PlayerCollisionHandler {
 
     public PlayerCollisionResult checkCollision(GameMap map, float playerY, float nextX, float nextY,
                                                 float playerVelocityX, float playerVelocityY) {
+        // Checks if player is jumping
         boolean isJumping = playerVelocityY != 0;
         float resolvedX = nextX;
         float resolvedY;
 
         // Horizontal collision
         boolean canMoveHorizontally = true;
+        // new collision box around player
         float newLeft = nextX + collisionOffsetX;
         float newRight = nextX + collisionOffsetX + playerWidth - 1;
         float top = playerY + collisionOffsetY;
         float bottom = playerY + collisionOffsetY + playerHeight - 1;
-        float stepY = Math.max(1, tileHeight / 3f);
+        float stepY = Math.max(1, tileHeight / 3f); // checking steps
 
+        // checks for solidTiles along the entire height of the player
         for (float testY = top; testY <= bottom; testY += stepY) {
             float testX = (playerVelocityX > 0) ? newRight : newLeft;
             if (map.isSolidTileAt(testX, testY)) {
                 canMoveHorizontally = false;
-            }
-        }
-        if (canMoveHorizontally) {
-            float testX = (playerVelocityX > 0) ? newRight : newLeft;
-            if (map.isSolidTileAt(testX, bottom)) {
-                canMoveHorizontally = false;
+                break;
             }
         }
         if (canMoveHorizontally) {
             resolvedX = nextX;
-        } else {
+        } else { // Keeps player from moving inside solid tiles
             if (playerVelocityX > 0) {
                 int tileX = (int) (newRight / tileWidth);
                 resolvedX = tileX * tileWidth - collisionOffsetX - playerWidth;
@@ -74,17 +72,12 @@ public class PlayerCollisionHandler {
                     canMoveVertically = false;
                 }
             }
-            if (canMoveVertically && map.isSolidTileAt(right, newBottom)) {
-                canMoveVertically = false;
-            }
         } else {
             for (float tx = left; tx <= right; tx += stepX) {
                 if (map.isSolidTileAt(tx, newTop)) {
                     canMoveVertically = false;
+                    break;
                 }
-            }
-            if (canMoveVertically && map.isSolidTileAt(right, newTop)) {
-                canMoveVertically = false;
             }
         }
 
@@ -108,6 +101,7 @@ public class PlayerCollisionHandler {
         return new PlayerCollisionResult(resolvedX, resolvedY, canMoveHorizontally ? playerVelocityX : 0, canMoveVertically ? playerVelocityY : 0, isJumping);
     }
 
+    // special data type to return collision results for player
     public static class PlayerCollisionResult {
         public final float x, y, velocityX, velocityY;
         public final boolean isJumping;

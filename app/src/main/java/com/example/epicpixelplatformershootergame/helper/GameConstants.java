@@ -2,8 +2,6 @@ package com.example.epicpixelplatformershootergame.helper;
 
 import android.content.res.Resources;
 
-import com.example.epicpixelplatformershootergame.R;
-
 import java.util.Arrays;
 import java.util.List;
 
@@ -13,7 +11,7 @@ import java.util.List;
 public final class GameConstants {
 
     public static final class DebugMode {
-        public static final boolean DEBUG_MODE = false;
+        public static final boolean DEBUG_MODE = true;
     }
 
     /**
@@ -95,8 +93,7 @@ public final class GameConstants {
             }
         }
 
-
-        public static final List<Integer> solidTileIds = Arrays.asList(1, 2, 3, 35, 36);
+        public static final List<Integer> solidTileIds = Arrays.asList(1, 2, 3, 35, 36, 56, 57, 58, 59, 60, 61, 62, 98, 99, 100, 101, 102, 103, 104);
     }
 
     public static final class FloorTile {
@@ -113,8 +110,8 @@ public final class GameConstants {
     public static final class Player {
         public static final int FRAME_WIDTH = 32;
         public static final int FRAME_HEIGHT = 48;
-        public static final float START_X = 100;
-        public static final float START_Y = 100;
+        public static final float START_X = 6;
+        public static final float START_Y = 10;
         public static final int PLAYER_COLLISION_WIDTH = 20;
         public static final int PLAYER_COLLISION_HEIGHT = 46;
         public static final int SCALE_MULTIPLIER = 6;

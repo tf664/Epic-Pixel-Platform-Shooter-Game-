@@ -44,16 +44,6 @@ public class Debug {
         c.drawRect(x, y, x + spriteWidth, y + spriteHeight, paint);
     }
 
-    public static void drawDebugMap(Canvas c, List<Rect> collisionRects) {
-        Paint bluePaint = new Paint();
-        bluePaint.setStyle(Paint.Style.STROKE);
-        bluePaint.setColor(Color.BLUE);
-        bluePaint.setStrokeWidth(5);
-        for (Rect r : collisionRects) {
-            c.drawRect(r, bluePaint);
-        }
-    }
-
     public static void drawDebugHitAreas(Canvas c, List<Enemy> enemies, List<Bullet> bullets, int cameraX, int mapOffsetY) {
         Paint enemyPaint = new Paint();
         enemyPaint.setColor(Color.argb(120, 255, 0, 0)); // semi-transparent red
