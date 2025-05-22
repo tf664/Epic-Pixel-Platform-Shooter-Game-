@@ -70,7 +70,7 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
         Bitmap btnUnpressed = BitmapFactory.decodeResource(getResources(), R.drawable.restartbutton_unpressed);
         Bitmap btnPressed = BitmapFactory.decodeResource(getResources(), R.drawable.restartbutton_pressed);
         Typeface pixelFont = Typeface.createFromAsset(context.getAssets(), "fonts/VT323-Regular.ttf");
-        gameState = new GameState(btnUnpressed, btnPressed, pixelFont);
+        gameState = new GameState(btnUnpressed, btnPressed, pixelFont, context);
 
         player = new Player(touchEvents, mapManager, bullets);
         enemies.add(new Enemy(1000, 330)); // TODO hardcoded
