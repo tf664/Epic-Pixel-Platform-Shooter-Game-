@@ -4,15 +4,16 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Typeface;
 
 import com.example.epicpixelplatformershootergame.helper.GameConstants;
 
 public class GameState {
-    public enum State {RUNNING, GAME_OVER}
+    public enum State {STARTING, RUNNING, GAME_OVER}
 
-    private State state = State.RUNNING;
+    private State state = State.STARTING;
 
     private Bitmap hudSheet;
 
@@ -24,23 +25,69 @@ public class GameState {
     private Typeface pixelFont;
 
     // Gun HUD
-    private int ammoCount = 6; // TODO GameConstants
+    private int ammoCount = 6; // hardcoded because of animation
     private Bitmap gunIcon;
     private Bitmap[] ammoIcons = new Bitmap[ammoCount];
 
-    // Game Over UI
-    private Bitmap restartButtonBitmapUnpressed;
-    private Bitmap restartButtonBitmapPressed;
-    private boolean restartButtonPressed = false;
+    // Menu button UI
+    private Bitmap startButtonBitmapUnpressed, startButtonBitmapPressed;
+    private Bitmap restartButtonBitmapUnpressed, restartButtonBitmapPressed;
+    private Bitmap settingsButtonBitmapUnpressed, settingsButtonBitmapPressed;
+    private boolean startButtonPressed = false, restartButtonPressed = false, settingsButtonPressed = false;
 
-    public GameState(Bitmap btnUnpressed, Bitmap btnPressed, Typeface font, Context context) {
-        this.restartButtonBitmapUnpressed = btnUnpressed;
-        this.restartButtonBitmapPressed = btnPressed;
+    public GameState(Bitmap buttonSheet, Typeface font, Context context) {
         this.pixelFont = font;
+        BitmapFactory.Options options = new BitmapFactory.Options();
+        options.inScaled = false;
+
+        float scaleFactor = GameConstants.MenuButtons.scale;
+        int buttonWidth = GameConstants.MenuButtons.btnWidth;
+        int buttonHeight = GameConstants.MenuButtons.btnHeight;
+
+        startButtonBitmapUnpressed = Bitmap.createScaledBitmap(
+                Bitmap.createBitmap(buttonSheet, 0, 0, buttonWidth, buttonHeight),
+                (int) (buttonWidth * scaleFactor),
+                (int) (buttonHeight * scaleFactor),
+                false
+        );
+
+        startButtonBitmapPressed = Bitmap.createScaledBitmap(
+                Bitmap.createBitmap(buttonSheet, 0, buttonHeight, buttonWidth, buttonHeight),
+                (int) (buttonWidth * scaleFactor),
+                (int) (buttonHeight * scaleFactor),
+                false
+        );
+
+        restartButtonBitmapUnpressed = Bitmap.createScaledBitmap(
+                Bitmap.createBitmap(buttonSheet, 0, buttonHeight * 2, buttonWidth, buttonHeight),
+                (int) (buttonWidth * scaleFactor),
+                (int) (buttonHeight * scaleFactor),
+                false
+        );
+
+        restartButtonBitmapPressed = Bitmap.createScaledBitmap(
+                Bitmap.createBitmap(buttonSheet, 0, buttonHeight * 3, buttonWidth, buttonHeight),
+                (int) (buttonWidth * scaleFactor),
+                (int) (buttonHeight * scaleFactor),
+                false
+        );
+
+        settingsButtonBitmapUnpressed = Bitmap.createScaledBitmap(
+                Bitmap.createBitmap(buttonSheet, 0, buttonHeight * 4, buttonWidth, buttonHeight),
+                (int) (buttonWidth * scaleFactor),
+                (int) (buttonHeight * scaleFactor),
+                false
+        );
+
+        settingsButtonBitmapPressed = Bitmap.createScaledBitmap(
+                Bitmap.createBitmap(buttonSheet, 0, buttonHeight * 5, buttonWidth, buttonHeight),
+                (int) (buttonWidth * scaleFactor),
+                (int) (buttonHeight * scaleFactor),
+                false
+        );
+
 
         // Load hud.png and extract the clock icon
-        BitmapFactory.Options options = new BitmapFactory.Options();
-        options.inScaled = false; // Prevent automatic scaling
         hudSheet = BitmapFactory.decodeResource(context.getResources(), R.drawable.hud, options);
         int columns = 6; // TODO gamestate
         int rows = 2;
@@ -82,25 +129,6 @@ public class GameState {
         return Math.max(0, levelTimeSeconds - (int) elapsed);
     }
 
-    public void setGameOver() {
-        state = State.GAME_OVER;
-    }
-
-    public State getState() {
-        return state;
-    }
-
-    public void setRestartButtonPressed(boolean pressed) {
-        restartButtonPressed = pressed;
-    }
-
-    public boolean isRestartButtonPressed() {
-        return restartButtonPressed;
-    }
-
-    public Bitmap getRestartButtonBitmapUnpressed() {
-        return restartButtonBitmapUnpressed;
-    }
 
     public void drawTimer(Canvas c) {
         int iconSize = 140; // TODO Move scale as needed
@@ -134,51 +162,133 @@ public class GameState {
         c.drawBitmap(scaledGun, gunX, gunY, null);
 
         int iconIdx = Math.max(0, Math.min(ammoCount, ammoIcons.length)) - 1;
-        if (iconIdx >= 0 && iconIdx < ammoIcons.length) {
+        if (iconIdx >= 0) {
             Bitmap ammoIconToDraw = ammoIcons[iconIdx];
             int ammoWidth = (int) (ammoIconToDraw.getWidth() * scale);
             int ammoHeight = (int) (ammoIconToDraw.getHeight() * scale);
 
             // Define ammo icon position (adjust as needed)
             float ammoX = gunX + gunWidth - ammoWidth - 35;
-            float ammoY = gunY + (gunHeight - ammoHeight) / 2 + 60;
+            float ammoY = gunY + (gunHeight - ammoHeight) / 2.0f + 60;
 
             Bitmap scaledAmmo = Bitmap.createScaledBitmap(ammoIconToDraw, ammoWidth, ammoHeight, false);
             c.drawBitmap(scaledAmmo, ammoX, ammoY, null);
         }
     }
 
-    public void setAmmoCount(int count) {
-        ammoCount = Math.max(0, Math.min(count, ammoIcons.length));
-    }
-
     public void decreaseAmmo() {
         ammoCount = Math.max(0, ammoCount - 1);
     }
+
     public void reloadAmmo() {
-        ammoCount = ammoIcons.length; // or your max ammo
+        ammoCount = ammoIcons.length;
     }
+
     public int getAmmoCount() {
         return ammoCount;
     }
 
-    public void drawGameOverScreen(Canvas c) {
+    public State getState() {
+        return state;
+    }
+
+    public void drawStartScreen(Canvas c) {
         Paint bgPaint = new Paint();
-        bgPaint.setColor(android.graphics.Color.argb(230, 30, 30, 50));
+        bgPaint.setColor(Color.argb(230, 10, 10, 30));
         c.drawRect(0, 0, GameConstants.Screen.SCREENWIDTH, GameConstants.Screen.SCREENHEIGHT, bgPaint);
 
         Paint textPaint = new Paint();
-        textPaint.setColor(android.graphics.Color.WHITE);
+        textPaint.setColor(Color.WHITE);
+        textPaint.setTextSize(180);
+        textPaint.setTypeface(pixelFont);
+        textPaint.setTextAlign(Paint.Align.CENTER);
+        c.drawText("Menu", GameConstants.Screen.SCREENWIDTH / 2, GameConstants.Screen.SCREENHEIGHT / 2 - 250, textPaint);
+
+        int btnX = GameConstants.MenuButtons.startButtonX;
+        int centerY = GameConstants.MenuButtons.startButtonY;
+
+        Bitmap startBtn = startButtonPressed ? startButtonBitmapPressed : startButtonBitmapUnpressed;
+        Bitmap settingsBtn = settingsButtonPressed ? settingsButtonBitmapPressed : settingsButtonBitmapUnpressed;
+
+        int startBtnWidth = startBtn.getWidth();
+        int startBtnHeight = startBtn.getHeight();
+        int startBtnX = (GameConstants.Screen.SCREENWIDTH - startBtnWidth) / 2;
+        int startBtnY = GameConstants.Screen.SCREENHEIGHT / 2 - 100;
+
+        int settingsBtnWidth = settingsBtn.getWidth();
+        int settingsBtnHeight = settingsBtn.getHeight();
+        int settingsBtnX = (GameConstants.Screen.SCREENWIDTH - settingsBtnWidth) / 2;
+        int settingsBtnY = GameConstants.Screen.SCREENHEIGHT / 2 + 50;
+
+        c.drawBitmap(startBtn, startBtnX, startBtnY, null);
+        c.drawBitmap(settingsBtn, settingsBtnX, settingsBtnY, null);
+    }
+
+    public void setStartButtonPressed(boolean pressed) {
+        startButtonPressed = pressed;
+    }
+
+    public boolean isStartButtonPressed() {
+        return startButtonPressed;
+    }
+
+    public Bitmap getStartButtonBitmapUnpressed() {
+        return startButtonBitmapUnpressed;
+    }
+
+    public void startGame() {
+        state = State.RUNNING;
+        timerStartMillis = System.currentTimeMillis();
+    }
+
+    public void drawGameOverScreen(Canvas c) {
+        Paint bgPaint = new Paint();
+        bgPaint.setColor(Color.argb(230, 30, 30, 50));
+        c.drawRect(0, 0, GameConstants.Screen.SCREENWIDTH, GameConstants.Screen.SCREENHEIGHT, bgPaint);
+
+        Paint textPaint = new Paint();
+        textPaint.setColor(Color.WHITE);
         textPaint.setTextSize(200);
         textPaint.setTypeface(pixelFont);
         textPaint.setTextAlign(Paint.Align.CENTER);
         c.drawText("Game Over", GameConstants.Screen.SCREENWIDTH / 2, GameConstants.Screen.SCREENHEIGHT / 2 - 100, textPaint);
 
-        int btnWidth = restartButtonBitmapUnpressed.getWidth();
-        int btnHeight = restartButtonBitmapUnpressed.getHeight();
-        int btnX = GameConstants.Screen.SCREENWIDTH / 2 - btnWidth / 2;
-        int btnY = (GameConstants.Screen.SCREENHEIGHT / 2 + 50) - 500;
+        int btnX = GameConstants.MenuButtons.restartButtonX;
+        int btnY = GameConstants.MenuButtons.restartButtonY;
         Bitmap btnBitmap = restartButtonPressed ? restartButtonBitmapPressed : restartButtonBitmapUnpressed;
         c.drawBitmap(btnBitmap, btnX, btnY, null);
+    }
+
+    public void setGameOver() {
+        state = State.GAME_OVER;
+    }
+
+    public void setRestartButtonPressed(boolean pressed) {
+        restartButtonPressed = pressed;
+    }
+
+    public boolean isRestartButtonPressed() {
+        return restartButtonPressed;
+    }
+
+    public Bitmap getRestartButtonBitmapUnpressed() {
+        return restartButtonBitmapUnpressed;
+    }
+
+    // TODO settings function not yet implemented
+    public Bitmap getSettingsButtonBitmapPressed() {
+        return settingsButtonBitmapPressed;
+    }
+
+    public Bitmap getSettingsButtonBitmapUnpressed() {
+        return settingsButtonBitmapUnpressed;
+    }
+
+    public void setSettingsButtonPressed(boolean pressed) {
+        settingsButtonPressed = pressed;
+    }
+
+    public boolean isSettingsButtonPressed() {
+        return settingsButtonPressed;
     }
 }

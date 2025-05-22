@@ -51,6 +51,18 @@ public final class GameConstants {
         public static final float Y_RELOAD = Y_SHOOT - 150f;
     }
 
+    public static final class MenuButtons {
+        public static final float scale = 4f;
+        public static final int btnWidth = 64;
+        public static final int btnHeight = 26;
+        public static final int startButtonX = GameConstants.Screen.SCREENWIDTH / 2 - btnWidth / 2;
+        public static final int startButtonY = GameConstants.Screen.SCREENHEIGHT / 2 - 100;
+        public static final int restartButtonX = GameConstants.Screen.SCREENWIDTH / 2 - btnWidth / 2;
+        public static final int restartButtonY = GameConstants.Screen.SCREENHEIGHT / 2 + 50;
+//        public static final int settingsButtonX = 100;
+//        public static final int settingsButtonY = 100;
+    }
+
 
     public static final class Map {
         //tile id = row * tilesInWidth (7)  + column (rows and columns start at 0, top-left tile is id 0).
@@ -66,10 +78,8 @@ public final class GameConstants {
         // red house: 42-76 green house: 84-118
         // when chest opened: 36 instead of 35
         // when barrel opened: 38 instead of 37
-
         // Item IDs: coin = 17, jumpboost = 24, health = 31
         public static final int[][] tileIds = {
-                // Each row must have exactly 46 elements
                 {0, 42, 43, 44, 45, 46, 47, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 84, 85, 86, 87, 88, 89, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 5, 6, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
                 {0, 49, 50, 51, 52, 53, 54, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 91, 92, 93, 94, 95, 96, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 11, 12, 13, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
                 {0, 56, 57, 58, 59, 60, 61, 62, 0, 0, 0, 0, 0, 0, 0, 0, 0, 98, 99, 100, 101, 102, 103, 104, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 18, 19, 20, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
@@ -78,7 +88,7 @@ public final class GameConstants {
                 {1, 1, 1, 1, 1, 1, 2, 1, 3, 3, 3, 3, 3, 2, 1, 1, 1, 1, 1, 3, 3, 3, 1, 1, 3, 2, 1, 1, 1, 2, 3, 1, 1, 3, 3, 2, 3, 1, 1, 1, 1, 1, 1, 1, 1, 3, 2, 1, 2, 2}
         };
 
-        static {
+        static { // checks if tileIds is rectangular
             for (int i = 1; i < tileIds.length; i++) {
                 if (tileIds[i].length != tileIds[0].length) {
                     throw new IllegalArgumentException("Row " + i + " in tileIds does not have " + tileIds[0].length + " elements (has " + tileIds[i].length + ")");

@@ -145,7 +145,7 @@ public class TouchEvents {
             jumpPressed = true;
         if (isWithin(x, y, xCenterShoot, yCenterShoot, GameConstants.Button.RADIUS))
             shootPressed = true;
-        if (isWithin(x, y, xCenterReload, yCenterReload, GameConstants.Button.RADIUS))
+        if (isWithin(x, y, xCenterReload, yCenterReload, GameConstants.Button.RELOAD_RADIUS))
             reloadPressed = true;
     }
 

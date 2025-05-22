@@ -30,6 +30,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 // --- Constructor ---
+
 public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
     private Paint redPaint = new Paint(); // TODO change
     private GameLoop gameLoop;
@@ -67,10 +68,12 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
         gameLoop = new GameLoop(this);
         mapManager = new MapManager();
 
-        Bitmap btnUnpressed = BitmapFactory.decodeResource(getResources(), R.drawable.restartbutton_unpressed);
-        Bitmap btnPressed = BitmapFactory.decodeResource(getResources(), R.drawable.restartbutton_pressed);
+        BitmapFactory.Options options = new BitmapFactory.Options();
+        options.inScaled = false;
+
+        Bitmap buttonSheet = BitmapFactory.decodeResource(getResources(), R.drawable.buttons, options);
         Typeface pixelFont = Typeface.createFromAsset(context.getAssets(), "fonts/VT323-Regular.ttf");
-        gameState = new GameState(btnUnpressed, btnPressed, pixelFont, context);
+        gameState = new GameState(buttonSheet, pixelFont, context);
 
         player = new Player(touchEvents, mapManager, bullets, gameState);
         enemies.add(new Enemy(1000, 330)); // TODO hardcoded
@@ -120,27 +123,66 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        if (gameState.getState() == GameState.State.GAME_OVER) {
+        GameState.State currentState = gameState.getState();
+
+        float x = event.getX();
+        float y = event.getY();
+
+        if (currentState == GameState.State.STARTING) {
+            // Start button
+            Bitmap startBtnBmp = gameState.getStartButtonBitmapUnpressed();
+            int startBtnWidth = startBtnBmp.getWidth();
+            int startBtnHeight = startBtnBmp.getHeight();
+            int startBtnX = (GameConstants.Screen.SCREENWIDTH - startBtnWidth) / 2;
+            int startBtnY = GameConstants.Screen.SCREENHEIGHT / 2 - 100;
+
+            // Settings button
+            Bitmap settingsBtnBmp = gameState.getSettingsButtonBitmapUnpressed();
+            int settingsBtnWidth = settingsBtnBmp.getWidth();
+            int settingsBtnHeight = settingsBtnBmp.getHeight();
+            int settingsBtnX = (GameConstants.Screen.SCREENWIDTH - settingsBtnWidth) / 2;
+            int settingsBtnY = GameConstants.Screen.SCREENHEIGHT / 2 + 50;
+
+            boolean insideStart = x >= startBtnX && x <= startBtnX + startBtnWidth &&
+                    y >= startBtnY && y <= startBtnY + startBtnHeight;
+            boolean insideSettings = x >= settingsBtnX && x <= settingsBtnX + settingsBtnWidth &&
+                    y >= settingsBtnY && y <= settingsBtnY + settingsBtnHeight;
+
+
+            switch (event.getAction()) {
+                case MotionEvent.ACTION_DOWN:
+                    gameState.setStartButtonPressed(insideStart);
+                    gameState.setSettingsButtonPressed(insideSettings);
+                    break;
+                case MotionEvent.ACTION_UP:
+                    if (gameState.isStartButtonPressed() && insideStart) {
+                        gameState.startGame();
+                    }
+                    // Add settings logic here if needed
+                    gameState.setStartButtonPressed(false);
+                    gameState.setSettingsButtonPressed(false);
+                    break;
+                case MotionEvent.ACTION_CANCEL:
+                    gameState.setStartButtonPressed(false);
+                    gameState.setSettingsButtonPressed(false);
+                    break;
+            }
+            return true;
+        } else if (currentState == GameState.State.GAME_OVER) {
             int btnWidth = gameState.getRestartButtonBitmapUnpressed().getWidth();
             int btnHeight = gameState.getRestartButtonBitmapUnpressed().getHeight();
-            int btnX = GameConstants.Screen.SCREENWIDTH / 2 - btnWidth / 2;
-            int btnY = (GameConstants.Screen.SCREENHEIGHT / 2 + 50) - 500;
-
-            float x = event.getX();
-            float y = event.getY();
+            int btnX = GameConstants.MenuButtons.restartButtonX;
+            int btnY = GameConstants.MenuButtons.restartButtonY;
 
             boolean inside = x >= btnX && x <= btnX + btnWidth && y >= btnY && y <= btnY + btnHeight;
 
             switch (event.getAction()) {
                 case MotionEvent.ACTION_DOWN:
-                    if (inside) {
-                        gameState.setRestartButtonPressed(true);
-                    }
+                    gameState.setRestartButtonPressed(inside);
                     break;
                 case MotionEvent.ACTION_UP:
                     if (gameState.isRestartButtonPressed() && inside) {
                         gameState.reset();
-
                         resetGameObjects();
                     }
                     gameState.setRestartButtonPressed(false);
@@ -151,10 +193,9 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
             }
             return true;
         }
-        if (gameState.getState() == GameState.State.RUNNING) {
-            return touchEvents.touchEvent(event);
-        }
-        return true;
+
+        // In-game controls
+        return touchEvents.touchEvent(event);
     }
 
 
@@ -166,6 +207,13 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
 
         drawBackground(c);
         mapManager.draw(c);
+
+        if (gameState.getState() == GameState.State.STARTING) {
+            gameState.drawStartScreen(c);
+            surfaceHolder.unlockCanvasAndPost(c);
+            return;
+        }
+
         player.drawPlayer(c);
         drawEnemies(c);
 
