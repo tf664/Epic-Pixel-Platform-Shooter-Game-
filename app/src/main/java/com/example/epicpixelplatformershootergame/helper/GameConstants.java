@@ -13,7 +13,7 @@ import java.util.List;
 public final class GameConstants {
 
     public static final class DebugMode {
-        public static final boolean DEBUG_MODE = true;
+        public static final boolean DEBUG_MODE = false;
     }
 
     /**
@@ -126,7 +126,7 @@ public final class GameConstants {
     }
 
     public static final class Enemy {
-        public static final float[] SPAWN_X = {1000, 2000, 2700};
+        public static final float[] SPAWN_X = {1200, 2000, 2700};
         public static final float[] SPAWN_Y = {552, 552, 552};
         public static final float SHOOT_RANGE = 900f;
         public static final float VERTICAL_TOLERANCE = 50f;

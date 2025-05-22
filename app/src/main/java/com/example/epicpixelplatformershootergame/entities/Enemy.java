@@ -3,44 +3,47 @@ package com.example.epicpixelplatformershootergame.entities;
 import com.example.epicpixelplatformershootergame.helper.GameConstants;
 
 import java.util.List;
+import java.util.Random;
 
 public class Enemy {
+    // Position & Movement
     public float x, y;
     public final float spawnX;
     public float velocityX = 2f; // TODO GameConstants
     public int direction = 1; // TODO GameConstants
-    private int health = 3;  // TODO GameConstants
+
+    // Patrol Behavior
+    public float patrolLeft, patrolRight;
+    private final Random rand = new Random();
+
+    // Health
+    private int health = 3; // TODO GameConstants
+
+    // Shooting
     private long lastShootTime = 0;
-
-
-    public float patrolLeft, patrolRight; // TODO GameConstants
+    private static final long SHOOT_COOLDOWN_MS = 800; // TODO GameConstants
+    private int shotsFired = 0;
+    private static final int MAX_SHOTS = 2;
+    private boolean shouldShoot = false;
+    private List<Bullet> pendingBullets;
+    private float pendingGunX, pendingGunY, pendingVx, pendingVy;
+    private static final long RELOAD_TIME_MS = 3000; // TODO adjust as needed
+    private boolean isReloading = false;
+    private long reloadStartTime = 0;
 
     // Animation
     private enum AnimState {IDLE, SHOOTING1, RELOADING, SHOOTING2, RETURN_IDLE}
-
     private AnimState animState = AnimState.IDLE;
-
     public int animFrame = 0;
+    private int animFrameIdx = 0;
+    private int animTick = 0;
+    private static final int ANIM_SPEED = 10;
+    // Animation frames
     private static final int[] IDLE_FRAMES = {0};
     private static final int[] SHOOTING1_FRAMES = {1, 2, 3, 4, 5};
     private static final int[] RELOADING_FRAMES = {6, 7, 8, 9, 10, 11, 12};
     private static final int[] SHOOTING2_FRAMES = {13, 14, 15, 16, 17};
     private static final int[] RETURN_IDLE_FRAMES = {18, 19, 20, 21};
-
-    private int animFrameIdx = 0;
-    private int animTick = 0;
-    private static final int ANIM_SPEED = 10;
-
-    private static final long SHOOT_COOLDOWN_MS = 800; //  // TODO GameConstants
-    private int shotsFired = 0;
-    private boolean shouldShoot = false;
-    private List<Bullet> pendingBullets;
-    private float pendingGunX, pendingGunY, pendingVx, pendingVy;
-    private static final int MAX_SHOTS = 2;
-    private static final long RELOAD_TIME_MS = 3000; // TODO adjust as needed
-
-    private boolean isReloading = false;
-    private long reloadStartTime = 0;
 
     public Enemy(float x, float y) {
         this.x = x;
@@ -64,18 +67,47 @@ public class Enemy {
         updateAnimation();
     }
 
-    public void updatePatrol() {
-        x += velocityX * direction;
-        if (x < patrolLeft) {
-            x = patrolLeft;
-            direction = 1;
-        } else if (x > patrolRight) {
-            x = patrolRight;
-            direction = -1;
+    public void updatePatrol(Player player) {
+        float playerX = player.playerX;
+        float playerY = player.playerY;
+        if (isPlayerInSight(playerX, playerY)) {
+            // Pursue player within patrol bounds
+            if (playerX < x && x > patrolLeft) {
+                direction = -1;
+                x += velocityX * direction;
+            } else if (playerX > x && x < patrolRight) {
+                direction = 1;
+                x += velocityX * direction;
+            }
+        } else {
+            // Regular patrol logic
+            x += velocityX * direction;
+            if (x < patrolLeft) {
+                x = patrolLeft;
+                direction = 1;
+            } else if (x > patrolRight) {
+                x = patrolRight;
+                direction = -1;
+            }
         }
 
         updateReload();
         updateAnimation();
+    }
+
+    private boolean isPlayerInSight(float playerX, float playerY) {
+        float gunOffsetX = direction > 0 ? 80 : 10;
+        float gunOffsetY = 80;
+        float gunX = x + gunOffsetX;
+        float gunY = y + gunOffsetY;
+
+        float dx = playerX - gunX;
+        float dy = Math.abs(playerY - gunY);
+
+        boolean facingPlayer = (dx > 0 && direction == 1) || (dx < 0 && direction == -1);
+        return Math.abs(dx) < GameConstants.Enemy.SHOOT_RANGE &&
+                dy < GameConstants.Enemy.VERTICAL_TOLERANCE &&
+                facingPlayer;
     }
 
     public void updateReload() {
