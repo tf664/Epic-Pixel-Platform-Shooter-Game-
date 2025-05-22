@@ -2,7 +2,8 @@ package com.example.epicpixelplatformershootergame.helper;
 
 import android.content.res.Resources;
 
-import java.util.ArrayList;
+import com.example.epicpixelplatformershootergame.R;
+
 import java.util.Arrays;
 import java.util.List;
 
@@ -47,7 +48,46 @@ public final class GameConstants {
         public static final float X_SHOOT = Screen.SCREENWIDTH - 150f;
         public static final float Y_SHOOT = 800f;
         public static final float X_RELOAD = X_SHOOT + 150f;
-        public static final float Y_RELOAD = Y_SHOOT + 150f;
+        public static final float Y_RELOAD = Y_SHOOT - 150f;
+    }
+
+
+    public static final class Map {
+        //tile id = row * tilesInWidth (7)  + column (rows and columns start at 0, top-left tile is id 0).
+
+        // 0 air, 1 sand floor, 2 sand floor, 3 sand floor
+        // plants/vegetation:  7, 8, 9, 10
+        // stone: 14
+        // sign: 15
+        // barrel: 37, 38
+        // chest: 35, 36
+        // caravan: 21-23, 28-30
+        // water tower: 4-6, 11-13, 18-20, 25-27, 32-34
+        // red house: 42-76 green house: 84-118
+        // when chest opened: 36 instead of 35
+        // when barrel opened: 38 instead of 37
+
+        // Item IDs: coin = 17, jumpboost = 24, health = 31
+        public static final int[][] tileIds = {
+                // Each row must have exactly 46 elements
+                {0, 42, 43, 44, 45, 46, 47, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 84, 85, 86, 87, 88, 89, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 5, 6, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+                {0, 49, 50, 51, 52, 53, 54, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 91, 92, 93, 94, 95, 96, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 11, 12, 13, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+                {0, 56, 57, 58, 59, 60, 61, 62, 0, 0, 0, 0, 0, 0, 0, 0, 0, 98, 99, 100, 101, 102, 103, 104, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 18, 19, 20, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+                {0, 63, 64, 65, 66, 67, 68, 69, 0, 0, 0, 0, 0, 0, 0, 0, 0, 105, 106, 107, 108, 109, 110, 111, 0, 21, 22, 23, 0, 0, 7, 0, 0, 0, 25, 26, 27, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+                {0, 70, 71, 72, 73, 74, 75, 76, 0, 0, 0, 0, 14, 0, 0, 9, 10, 112, 113, 114, 115, 116, 117, 118, 0, 28, 29, 30, 8, 3, 1, 2, 0, 0, 32, 33, 34, 0, 15, 7, 0, 0, 0, 0, 10, 0, 35, 0, 0, 0},
+                {1, 1, 1, 1, 1, 1, 2, 1, 3, 3, 3, 3, 3, 2, 1, 1, 1, 1, 1, 3, 3, 3, 1, 1, 3, 2, 1, 1, 1, 2, 3, 1, 1, 3, 3, 2, 3, 1, 1, 1, 1, 1, 1, 1, 1, 3, 2, 1, 2, 2}
+        };
+
+        static {
+            for (int i = 1; i < tileIds.length; i++) {
+                if (tileIds[i].length != tileIds[0].length) {
+                    throw new IllegalArgumentException("Row " + i + " in tileIds does not have " + tileIds[0].length + " elements (has " + tileIds[i].length + ")");
+                }
+            }
+        }
+
+
+        public static final List<Integer> solidTileIds = Arrays.asList(1, 2, 3, 35, 36);
     }
 
     public static final class FloorTile {
@@ -56,20 +96,8 @@ public final class GameConstants {
         public static int SCALE_MULTIPLIER = 1;
         public static int WIDTH = BASE_WIDTH;
         public static int HEIGHT = BASE_HEIGHT;
-    }
-
-    public static final class Map {
-        // 0 air, 1 sand floor, 2 sand floor, 3 sand floor, 4,
-        //tile id = row * tilesInWidth + column (rows and columns start at 0, top-left tile is id 0).
-        public static final int[][] tileIds = {
-                {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 18, 19, 20, 0, 0, 0, 0, 0, 0},
-                {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 25, 26, 27, 0, 0, 0, 0, 0, 0},
-                {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 2, 0, 0, 32, 33, 34, 0, 0, 0, 0, 0, 0},
-                {0, 0, 0, 3, 0, 1, 2, 3, 1, 0, 1, 0, 3, 0, 0, 0, 0, 0, 39, 40, 41, 0, 0, 35, 36, 0, 0, 0},
-                {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 3, 3, 3, 3, 3, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0}
-        };
-
-        public static final List<Integer> solidTileIds = Arrays.asList(1, 2, 3, 35, 36);
+        public static int TOTAL_ROWS = 576 / BASE_HEIGHT;
+        public static int TOTAL_COLUMNS = 224 / BASE_WIDTH;
     }
 
 
@@ -122,6 +150,5 @@ public final class GameConstants {
     public static int getCollisionOffsetY() {
         return (Player.FRAME_HEIGHT - Player.PLAYER_COLLISION_HEIGHT) / 2;
     }
-
 }
 

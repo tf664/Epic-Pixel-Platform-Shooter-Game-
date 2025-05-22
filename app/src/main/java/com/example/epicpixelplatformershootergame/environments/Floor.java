@@ -9,7 +9,7 @@ import com.example.epicpixelplatformershootergame.helper.GameConstants;
 import com.example.epicpixelplatformershootergame.helper.interfaces.BitmapMethods;
 
 public enum Floor implements BitmapMethods {
-    OUTSIDE(R.drawable.tilesetfloorsand, 7, 6);
+    OUTSIDE(R.drawable.tilesetfloorsand, GameConstants.FloorTile.TOTAL_COLUMNS, GameConstants.FloorTile.TOTAL_ROWS);
     private Bitmap[] tiles;
 
     Floor(int resId, int tilesInWidth, int tilesInHeight) {

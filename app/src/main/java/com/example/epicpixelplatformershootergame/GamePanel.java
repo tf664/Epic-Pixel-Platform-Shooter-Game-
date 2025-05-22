@@ -109,14 +109,13 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
         if (scale < 1) scale = 1;
 
         GameConstants.FloorTile.SCALE_MULTIPLIER = scale;
-        GameConstants.FloorTile.WIDTH = GameConstants.FloorTile.BASE_WIDTH * scale;
-        GameConstants.FloorTile.HEIGHT = GameConstants.FloorTile.BASE_HEIGHT * scale;
+        GameConstants.FloorTile.WIDTH = GameConstants.FloorTile.BASE_WIDTH * GameConstants.FloorTile.SCALE_MULTIPLIER;
+        GameConstants.FloorTile.HEIGHT = GameConstants.FloorTile.BASE_HEIGHT * GameConstants.FloorTile.SCALE_MULTIPLIER;
 
         mapManager.updateScreenSize(w, h);
 
-        if (background_back != null) {
+        if (background_back != null)
             background_back = Bitmap.createScaledBitmap(background_back, w, h, true);
-        }
     }
 
     @Override

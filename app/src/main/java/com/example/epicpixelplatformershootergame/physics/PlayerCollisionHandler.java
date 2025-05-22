@@ -101,7 +101,7 @@ public class PlayerCollisionHandler {
                 int tileY = (int) (newTop / tileHeight);
                 float tileBottom = (tileY + 1) * tileHeight;
                 resolvedY = tileBottom - collisionOffsetY;
-playerVelocityY = 0;
+                playerVelocityY = 0;
             }
         }
 
