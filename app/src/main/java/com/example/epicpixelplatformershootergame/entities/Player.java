@@ -64,7 +64,7 @@ public class Player {
         if (animationTick >= GameConstants.Physics.ANIMATION_SPEED) {
             animationTick = 0;
 
-            if (isShooting) {
+            if (isShooting && gameState.getAmmoCount() > 0) {
                 setPlayerShootingAnimation();
                 return;
             }
@@ -188,6 +188,12 @@ public class Player {
             float dir = playerFaceDirection == GameConstants.Facing_Direction.RIGHT ? 1 : -1;
             bullets.add(new Bullet(bulletX, bulletY, bulletSpeed * dir, 0));
             gameState.decreaseAmmo();
+        }
+    }
+
+    public void reload() {
+        if (gameState != null) {
+            gameState.reloadAmmo();
         }
     }
 

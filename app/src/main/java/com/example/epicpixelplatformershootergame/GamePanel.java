@@ -196,7 +196,7 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
         player.tryConsumeJumpBuffer();
         player.updateAnimation();
         player.applyGravity();
-        handleMovement();
+        player.handleMovement();
         // Calculate next player position
         float nextX = player.clampPlayerPosition(player.playerX + player.playerVelocityX);
         float nextY = player.playerY + player.playerVelocityY;
@@ -404,15 +404,6 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
         background_front = Bitmap.createScaledBitmap(background_front, GAME_WIDTH, GAME_HEIGHT, true);
     }
 
-    private void handleMovement() {
-        float moveSpeed = GameConstants.Physics.PLAYER_MOVE_SPEED;
-        player.playerVelocityX = 0;
-        if (player.moveLeft)
-            player.playerVelocityX = -moveSpeed;
-        else if (player.moveRight)
-            player.playerVelocityX = moveSpeed;
-    }
-
     public static RectF getScaledCollisionRect(Enemy enemy) {
         float scale = GameConstants.GruntTwo.SCALE_MULTIPLIER;
 
@@ -426,7 +417,7 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
         return new RectF(left, top, left + width, top + height);
     }
 
-    // --- Setters senders ---
+    // --- Setters and getters senders ---
     public void setMoveLeft(boolean moveLeft) {
         if (player != null) {
             player.setMoveLeft(moveLeft);
@@ -443,6 +434,10 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
         if (player != null) {
             player.setJumpButtonHeld(held);
         }
+    }
+
+    public Player getPlayer() {
+        return player;
     }
 
     // --- Reset helper ---

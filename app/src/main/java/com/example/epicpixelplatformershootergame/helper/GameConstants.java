@@ -37,14 +37,17 @@ public final class GameConstants {
 
     public static final class Button {
         public static final int RADIUS = 100;
+        public static final int RELOAD_RADIUS = 60;
         public static final float X_LEFT = 200f;
         public static final float Y_LEFT = 800f;
         public static final float X_RIGHT = 500f;
         public static final float Y_RIGHT = 800f;
-        public static final float X_JUMP = 1900f;
+        public static final float X_JUMP = Screen.SCREENWIDTH - 400f;
         public static final float Y_JUMP = 800f;
-        public static final float X_SHOOT = 2100f;
-        public static final float Y_SHOOT = 700f;
+        public static final float X_SHOOT = Screen.SCREENWIDTH - 150f;
+        public static final float Y_SHOOT = 800f;
+        public static final float X_RELOAD = X_SHOOT + 150f;
+        public static final float Y_RELOAD = Y_SHOOT + 150f;
     }
 
     public static final class FloorTile {
