@@ -158,48 +158,49 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
         return true;
     }
 
+
     // --- Game Loop ---
     public void render() {
         SurfaceHolder surfaceHolder = getHolder();
         Canvas c = surfaceHolder.lockCanvas();
         if (c == null) return;
 
-        if (gameState.getState() == GameState.State.GAME_OVER) {
-            drawBackground(c);
-            mapManager.draw(c);
-            gameState.drawGameOverScreen(c);
-            surfaceHolder.unlockCanvasAndPost(c);
-            return;
-        }
-
         drawBackground(c);
-        mapManager.updateCamera(player.playerX);
         mapManager.draw(c);
-
-
         player.drawPlayer(c);
-        drawPlayerHealthBar(c);
-        drawBullets(c);
-        drawEnemyBullets(c);
         drawEnemies(c);
 
+        drawBullets(c);
+        drawEnemyBullets(c);
+
+        // UI elements
+        drawPlayerHealthBar(c);
         gameState.drawTimer(c);
         drawDebug(c);
         touchEvents.draw(c);
+
+        if (gameState.getState() == GameState.State.GAME_OVER) {
+            gameState.drawGameOverScreen(c);
+        }
 
         surfaceHolder.unlockCanvasAndPost(c);
     }
 
     public void update(double delta) {
+        if (gameState.getState() == GameState.State.GAME_OVER) {
+            resetGameObjects();
+            return;
+        }
+        // Handle player input and animation
         player.tryConsumeJumpBuffer();
         player.updateAnimation();
         player.applyGravity();
         handleMovement();
-
+        // Calculate next player position
         float nextX = player.clampPlayerPosition(player.playerX + player.playerVelocityX);
         float nextY = player.playerY + player.playerVelocityY;
 
-        // Update all enemies (patrol logic)
+        // Update enemies
         for (Enemy enemy : enemies) {
             enemy.updatePatrol();
             enemy.updateAnimation();
@@ -207,15 +208,19 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
             float playerCenterY = player.playerY + GameConstants.Player.HEIGHT / 2f;
             enemy.tryShoot(enemyBullets, playerCenterX, playerCenterY);
         }
+
+        // Update bullets
         for (Bullet bullet : bullets) bullet.update();
-        bullets.removeIf(b -> !b.active);
         for (Bullet bullet : enemyBullets) bullet.update();
-        enemyBullets.removeIf(b -> !b.active);
 
         checkPlayerCollision(nextX, nextY);
-        mapManager.updateCamera(player.playerX);
 
-        // Shooting animation
+        // Remove inactive bullets and dead enemies
+        bullets.removeIf(b -> !b.active);
+        enemyBullets.removeIf(b -> !b.active);
+        enemies.removeIf(e -> !e.isAlive());
+
+        // Handle shooting animation and input buffer
         if (!player.isShooting && touchEvents.hasBufferedShoot()) {
             player.isShooting = true;
             player.playerAnimationFrame = 0;
@@ -225,6 +230,8 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
             player.pendingShoot = true;
             touchEvents.clearShootBuffer();
         }
+
+        // Bullet-enemy collision
         for (Bullet bullet : bullets) {
             for (Enemy enemy : enemies) {
                 if (bullet.active && enemy.isAlive() && checkBulletPenetration(bullet, enemy)) {
@@ -233,7 +240,7 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
                 }
             }
         }
-        // Check collision with player
+        // Bullet-player collision
         for (Bullet bullet : enemyBullets) {
             if (bullet.active && checkPlayerHitByEnemyBullet(bullet)) {
                 player.takeDamage(1);
@@ -241,14 +248,14 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
             }
         }
 
-        enemies.removeIf(e -> !e.isAlive()); // remove dead enemies
+        // Update camera and game state
+        mapManager.updateCamera(player.playerX);
 
         if (GameConstants.Player.HEALTH <= 0 && gameState.getState() != GameState.State.GAME_OVER) {
             gameState.setGameOver();
         }
 
         gameState.updateTimer();
-
     }
 
     private boolean checkBulletPenetration(Bullet bullet, Enemy enemy) {

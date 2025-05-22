@@ -72,13 +72,9 @@ public class GameState {
         return restartButtonBitmapUnpressed;
     }
 
-    public Bitmap getRestartButtonBitmapPressed() {
-        return restartButtonBitmapPressed;
-    }
-
     public void drawGameOverScreen(Canvas c) {
         Paint bgPaint = new Paint();
-        bgPaint.setColor(android.graphics.Color.argb(220, 30, 30, 50));
+        bgPaint.setColor(android.graphics.Color.argb(230, 30, 30, 50));
         c.drawRect(0, 0, GameConstants.Screen.SCREENWIDTH, GameConstants.Screen.SCREENHEIGHT, bgPaint);
 
         Paint textPaint = new Paint();
@@ -106,6 +102,6 @@ public class GameState {
         float x = GameConstants.Screen.SCREENWIDTH - 300;
         float y = 150;
 
-        c.drawText("O: " + getTimeLeft(), x, y, timerPaint);
+        c.drawText("O:" + getTimeLeft(), x, y, timerPaint);
     }
 }
