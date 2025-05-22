@@ -277,7 +277,7 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
         timerPaint.setFakeBoldText(true);
         timerPaint.setTypeface(pixelFont); // Font
 
-        float x = 150; // TODO move to GameConstants
+        float x = GameConstants.Screen.SCREENWIDTH - 300; // TODO move to GameConstants
         float y = 150;
 
         long elapsed = (System.currentTimeMillis() - timerStartMillis) / 1000;
