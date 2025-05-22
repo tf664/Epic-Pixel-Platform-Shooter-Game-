@@ -21,6 +21,7 @@ import com.example.epicpixelplatformershootergame.entities.Bullet;
 import com.example.epicpixelplatformershootergame.entities.Enemy;
 import com.example.epicpixelplatformershootergame.entities.GameEntityAssets;
 import com.example.epicpixelplatformershootergame.entities.Player;
+import com.example.epicpixelplatformershootergame.environments.GameMap;
 import com.example.epicpixelplatformershootergame.environments.MapManager;
 import com.example.epicpixelplatformershootergame.helper.GameConstants;
 import com.example.epicpixelplatformershootergame.inputs.TouchEvents;
@@ -76,8 +77,11 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
         gameState = new GameState(buttonSheet, pixelFont, context);
 
         player = new Player(touchEvents, mapManager, bullets, gameState);
-        enemies.add(new Enemy(1000, 330)); // TODO hardcoded
-        enemies.add(new Enemy(1500, 330)); // TODO hardcoded
+
+        // Spawn enemies
+        for (int i = 0; i < GameConstants.Enemy.SPAWN_X.length; i++) {
+            enemies.add(new Enemy(GameConstants.Enemy.SPAWN_X[i], GameConstants.Enemy.SPAWN_Y[i]));
+        }
     }
 
 

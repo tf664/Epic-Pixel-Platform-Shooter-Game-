@@ -57,7 +57,7 @@ public final class GameConstants {
         public static final int btnHeight = 26;
         public static final int startButtonX = GameConstants.Screen.SCREENWIDTH / 2 - btnWidth / 2;
         public static final int startButtonY = GameConstants.Screen.SCREENHEIGHT / 2 - 100;
-        public static final int restartButtonX = GameConstants.Screen.SCREENWIDTH / 2 - btnWidth / 2;
+        public static final int restartButtonX = GameConstants.Screen.SCREENWIDTH / 2 - btnWidth / 2 - 100;
         public static final int restartButtonY = GameConstants.Screen.SCREENHEIGHT / 2 + 50;
 //        public static final int settingsButtonX = 100;
 //        public static final int settingsButtonY = 100;
@@ -126,8 +126,10 @@ public final class GameConstants {
     }
 
     public static final class Enemy {
-        public static final float[] SPAWN_X = {1000, 1500};
-        public static final float[] SPAWN_Y = {330, 330};
+        public static final float[] SPAWN_X = {1000, 2000, 2700};
+        public static final float[] SPAWN_Y = {552, 552, 552};
+        public static final float SHOOT_RANGE = 900f;
+        public static final float VERTICAL_TOLERANCE = 50f;
     }
 
     public static final class GruntTwo {

@@ -204,19 +204,14 @@ public class GameState {
         textPaint.setTextAlign(Paint.Align.CENTER);
         c.drawText("Menu", GameConstants.Screen.SCREENWIDTH / 2, GameConstants.Screen.SCREENHEIGHT / 2 - 250, textPaint);
 
-        int btnX = GameConstants.MenuButtons.startButtonX;
-        int centerY = GameConstants.MenuButtons.startButtonY;
-
         Bitmap startBtn = startButtonPressed ? startButtonBitmapPressed : startButtonBitmapUnpressed;
         Bitmap settingsBtn = settingsButtonPressed ? settingsButtonBitmapPressed : settingsButtonBitmapUnpressed;
 
         int startBtnWidth = startBtn.getWidth();
-        int startBtnHeight = startBtn.getHeight();
         int startBtnX = (GameConstants.Screen.SCREENWIDTH - startBtnWidth) / 2;
         int startBtnY = GameConstants.Screen.SCREENHEIGHT / 2 - 100;
 
         int settingsBtnWidth = settingsBtn.getWidth();
-        int settingsBtnHeight = settingsBtn.getHeight();
         int settingsBtnX = (GameConstants.Screen.SCREENWIDTH - settingsBtnWidth) / 2;
         int settingsBtnY = GameConstants.Screen.SCREENHEIGHT / 2 + 50;
 

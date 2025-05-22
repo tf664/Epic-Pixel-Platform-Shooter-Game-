@@ -11,7 +11,6 @@ public class Enemy {
     public int direction = 1; // TODO GameConstants
     private int health = 3;  // TODO GameConstants
     private long lastShootTime = 0;
-    private static final long SHOOT_COOLDOWN_MS = 800; // 1.5 seconds  // TODO GameConstants
 
 
     public float patrolLeft, patrolRight; // TODO GameConstants
@@ -32,10 +31,16 @@ public class Enemy {
     private int animTick = 0;
     private static final int ANIM_SPEED = 10;
 
+    private static final long SHOOT_COOLDOWN_MS = 800; //  // TODO GameConstants
     private int shotsFired = 0;
     private boolean shouldShoot = false;
     private List<Bullet> pendingBullets;
     private float pendingGunX, pendingGunY, pendingVx, pendingVy;
+    private static final int MAX_SHOTS = 2;
+    private static final long RELOAD_TIME_MS = 3000; // TODO adjust as needed
+
+    private boolean isReloading = false;
+    private long reloadStartTime = 0;
 
     public Enemy(float x, float y) {
         this.x = x;
@@ -54,6 +59,9 @@ public class Enemy {
             x = rightBound;
             direction = -1;
         }
+
+        updateReload();
+        updateAnimation();
     }
 
     public void updatePatrol() {
@@ -64,6 +72,20 @@ public class Enemy {
         } else if (x > patrolRight) {
             x = patrolRight;
             direction = -1;
+        }
+
+        updateReload();
+        updateAnimation();
+    }
+
+    public void updateReload() {
+        if (isReloading) {
+            long now = System.currentTimeMillis();
+            if (now - reloadStartTime >= RELOAD_TIME_MS) {
+                isReloading = false;
+                shotsFired = 0;
+                // Reset the animation state to IDLE after reloading
+            }
         }
     }
 
@@ -83,7 +105,7 @@ public class Enemy {
                     }
                     animFrameIdx++;
                     if (animFrameIdx >= SHOOTING1_FRAMES.length) {
-                        if (shotsFired >= 5) {
+                        if (shotsFired >= MAX_SHOTS) {
                             animState = AnimState.RELOADING;
                         } else {
                             animState = AnimState.RETURN_IDLE;
@@ -99,7 +121,7 @@ public class Enemy {
                     }
                     animFrameIdx++;
                     if (animFrameIdx >= SHOOTING2_FRAMES.length) {
-                        if (shotsFired >= 5) {
+                        if (shotsFired >= MAX_SHOTS) {
                             animState = AnimState.RELOADING;
                         } else {
                             animState = AnimState.RETURN_IDLE;
@@ -109,8 +131,11 @@ public class Enemy {
                     break;
                 case RELOADING:
                     animFrame = RELOADING_FRAMES[animFrameIdx++];
+                    if (animFrameIdx == 1 && !isReloading) {
+                        reloadStartTime = System.currentTimeMillis(); // Start reloading timer once
+                        isReloading = true;
+                    }
                     if (animFrameIdx >= RELOADING_FRAMES.length) {
-                        shotsFired = 0;
                         animState = AnimState.RETURN_IDLE;
                         animFrameIdx = 0;
                     }
@@ -156,6 +181,9 @@ public class Enemy {
     }
 
     public void tryShoot(List<Bullet> enemyBullets, float targetX, float targetY) {
+        if (isReloading || animState != AnimState.IDLE)
+            return; // Blocks shooting during reload or animation
+
         long now = System.currentTimeMillis();
         float gunOffsetX = direction > 0 ? 80 : 10;
         float gunOffsetY = 80;
@@ -166,15 +194,16 @@ public class Enemy {
 
         boolean facingPlayer = (playerOffsetXFromGun > 0 && direction == 1) ||
                 (playerOffsetXFromGun < 0 && direction == -1);
-        if (Math.abs(playerOffsetXFromGun) < 2500 && playerOffsetYFromGun < 40 && facingPlayer) {  // TODO GameConstants
-            if (animState == AnimState.IDLE && now - lastShootTime >= SHOOT_COOLDOWN_MS && shotsFired < 5) {
-                float bulletSpeed = 12f;  // TODO GameConstants
-                float vx = bulletSpeed * direction;
-                float vy = 0;
-                // Alternate between SHOOTING1 and SHOOTING2 for variety, or always use SHOOTING1
-                boolean isSecond = (shotsFired % 2 == 1);
-                startShooting(enemyBullets, gunX, gunY, vx, vy, isSecond);
-            }
+        boolean inSight = Math.abs(playerOffsetXFromGun) < GameConstants.Enemy.SHOOT_RANGE &&
+                Math.abs(playerOffsetYFromGun) < GameConstants.Enemy.VERTICAL_TOLERANCE &&
+                facingPlayer;
+
+        if (inSight && now - lastShootTime >= SHOOT_COOLDOWN_MS && shotsFired < MAX_SHOTS) {
+            float bulletSpeed = 12f;
+            float vx = bulletSpeed * direction;
+            float vy = 0;
+            boolean isSecond = (shotsFired % 2 == 1);
+            startShooting(enemyBullets, gunX, gunY, vx, vy, isSecond);
         }
     }
 }
