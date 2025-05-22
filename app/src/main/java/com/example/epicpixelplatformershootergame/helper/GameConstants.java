@@ -73,6 +73,8 @@ public final class GameConstants {
     public static final class Player {
         public static final int FRAME_WIDTH = 32;
         public static final int FRAME_HEIGHT = 48;
+        public static final float START_X = 100;
+        public static final float START_Y = 100;
         public static final int PLAYER_COLLISION_WIDTH = 20;
         public static final int PLAYER_COLLISION_HEIGHT = 46;
         public static final int SCALE_MULTIPLIER = 6;
@@ -80,6 +82,11 @@ public final class GameConstants {
         public static final int HEIGHT = FRAME_HEIGHT * SCALE_MULTIPLIER;
         public static final int TOTAL_HEALTH = 5;
         public static int HEALTH = TOTAL_HEALTH;
+    }
+
+    public static final class Enemy {
+        public static final float[] SPAWN_X = {1000, 1500};
+        public static final float[] SPAWN_Y = {330, 330};
     }
 
     public static final class GruntTwo {

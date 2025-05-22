@@ -30,7 +30,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 // --- Constructor ---
-
 public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
     private Paint redPaint = new Paint(); // TODO change
     private GameLoop gameLoop;
@@ -41,21 +40,17 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
     private List<Bullet> bullets = new ArrayList<>();
     private List<Bullet> enemyBullets = new ArrayList<>();
 
+
+    private GameState gameState;
+
     // Map
     private MapManager mapManager;
     private Bitmap background_back;
     private Bitmap background_front;
 
-    // Timer
-    private Typeface pixelFont;
-    private int levelTimeSeconds = 300; // 300 seconds (5 minutes) // TODO move GameConstants
-    private long timerStartMillis = System.currentTimeMillis();
-    private boolean timerActive = true;
-
     private final PlayerCollisionHandler collisionHandler = new PlayerCollisionHandler();
 
     private Player player;
-
 
     public GamePanel(Context context) {
         super(context);
@@ -72,7 +67,10 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
         gameLoop = new GameLoop(this);
         mapManager = new MapManager();
 
-        pixelFont = Typeface.createFromAsset(context.getAssets(), "fonts/VT323-Regular.ttf");
+        Bitmap btnUnpressed = BitmapFactory.decodeResource(getResources(), R.drawable.restartbutton_unpressed);
+        Bitmap btnPressed = BitmapFactory.decodeResource(getResources(), R.drawable.restartbutton_pressed);
+        Typeface pixelFont = Typeface.createFromAsset(context.getAssets(), "fonts/VT323-Regular.ttf");
+        gameState = new GameState(btnUnpressed, btnPressed, pixelFont);
 
         player = new Player(touchEvents, mapManager, bullets);
         enemies.add(new Enemy(1000, 330)); // TODO hardcoded
@@ -122,10 +120,43 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
     }
 
     @Override
-    public boolean onTouchEvent(MotionEvent event) { // Part of View, which SurfaceView extends and GamePanel extends SurfaceView
-        return touchEvents.touchEvent(event);
-    }
+    public boolean onTouchEvent(MotionEvent event) {
+        if (gameState.getState() == GameState.State.GAME_OVER) {
+            int btnWidth = gameState.getRestartButtonBitmapUnpressed().getWidth();
+            int btnHeight = gameState.getRestartButtonBitmapUnpressed().getHeight();
+            int btnX = GameConstants.Screen.SCREENWIDTH / 2 - btnWidth / 2;
+            int btnY = (GameConstants.Screen.SCREENHEIGHT / 2 + 50) - 500;
 
+            float x = event.getX();
+            float y = event.getY();
+
+            boolean inside = x >= btnX && x <= btnX + btnWidth && y >= btnY && y <= btnY + btnHeight;
+
+            switch (event.getAction()) {
+                case MotionEvent.ACTION_DOWN:
+                    if (inside) {
+                        gameState.setRestartButtonPressed(true);
+                    }
+                    break;
+                case MotionEvent.ACTION_UP:
+                    if (gameState.isRestartButtonPressed() && inside) {
+                        gameState.reset();
+
+                        resetGameObjects();
+                    }
+                    gameState.setRestartButtonPressed(false);
+                    break;
+                case MotionEvent.ACTION_CANCEL:
+                    gameState.setRestartButtonPressed(false);
+                    break;
+            }
+            return true;
+        }
+        if (gameState.getState() == GameState.State.RUNNING) {
+            return touchEvents.touchEvent(event);
+        }
+        return true;
+    }
 
     // --- Game Loop ---
     public void render() {
@@ -133,9 +164,18 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
         Canvas c = surfaceHolder.lockCanvas();
         if (c == null) return;
 
+        if (gameState.getState() == GameState.State.GAME_OVER) {
+            drawBackground(c);
+            mapManager.draw(c);
+            gameState.drawGameOverScreen(c);
+            surfaceHolder.unlockCanvasAndPost(c);
+            return;
+        }
+
         drawBackground(c);
         mapManager.updateCamera(player.playerX);
         mapManager.draw(c);
+
 
         player.drawPlayer(c);
         drawPlayerHealthBar(c);
@@ -143,7 +183,7 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
         drawEnemyBullets(c);
         drawEnemies(c);
 
-        drawTimer(c);
+        gameState.drawTimer(c);
         drawDebug(c);
         touchEvents.draw(c);
 
@@ -196,7 +236,6 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
         // Check collision with player
         for (Bullet bullet : enemyBullets) {
             if (bullet.active && checkPlayerHitByEnemyBullet(bullet)) {
-                // TODO: handle player damage or death
                 player.takeDamage(1);
                 bullet.active = false;
             }
@@ -204,15 +243,12 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
 
         enemies.removeIf(e -> !e.isAlive()); // remove dead enemies
 
-        // Timer logic
-        if (timerActive) {
-            long elapsed = (System.currentTimeMillis() - timerStartMillis) / 1000;
-            int timeLeft = Math.max(0, levelTimeSeconds - (int) elapsed);
-            if (timeLeft == 0) {
-                timerActive = false;
-                // TODO: handle time up (player dies or game over)
-            }
+        if (GameConstants.Player.HEALTH <= 0 && gameState.getState() != GameState.State.GAME_OVER) {
+            gameState.setGameOver();
         }
+
+        gameState.updateTimer();
+
     }
 
 
@@ -270,22 +306,6 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
             if (bullet.active)
                 c.drawCircle(bullet.x - mapManager.getCameraX(), bullet.y + mapManager.getMapOffsetY(), 10, paint);
         }
-    }
-
-    private void drawTimer(Canvas c) {
-        Paint timerPaint = new Paint();
-        timerPaint.setColor(Color.WHITE);
-        timerPaint.setTextSize(100); // Size
-        timerPaint.setFakeBoldText(true);
-        timerPaint.setTypeface(pixelFont); // Font
-
-        float x = GameConstants.Screen.SCREENWIDTH - 300; // TODO move to GameConstants
-        float y = 150;
-
-        long elapsed = (System.currentTimeMillis() - timerStartMillis) / 1000;
-        int timeLeft = Math.max(0, levelTimeSeconds - (int) elapsed);
-
-        c.drawText("O: " + timeLeft, x, y, timerPaint);
     }
 
     private void drawPlayerHealthBar(Canvas c) {
@@ -413,6 +433,32 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
         if (player != null) {
             player.setJumpButtonHeld(held);
         }
+    }
+
+    // --- Reset helper ---
+    private void resetGameObjects() {
+        // Reset player state
+        player.playerX = GameConstants.Player.START_X;
+        player.playerY = GameConstants.Player.START_Y;
+        player.playerFaceDirection = GameConstants.Facing_Direction.RIGHT;
+        player.playerVelocityX = 0;
+        player.playerVelocityY = 0;
+        player.isJumping = false;
+        player.moveLeft = false;
+        player.moveRight = false;
+        player.isShooting = false;
+        player.pendingShoot = false;
+        GameConstants.Player.HEALTH = GameConstants.Player.TOTAL_HEALTH;
+
+        // Reset enemies
+        enemies.clear();
+        for (int i = 0; i < GameConstants.Enemy.SPAWN_X.length; i++) {
+            enemies.add(new Enemy(GameConstants.Enemy.SPAWN_X[i], GameConstants.Enemy.SPAWN_Y[i]));
+        }
+
+        // Clear bullets
+        bullets.clear();
+        enemyBullets.clear();
     }
 }
 

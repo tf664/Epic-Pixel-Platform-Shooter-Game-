@@ -96,10 +96,12 @@ public class PlayerCollisionHandler {
                 float tileTop = tileY * tileHeight;
                 resolvedY = tileTop - collisionOffsetY - playerHeight;
                 isJumping = false;
+                playerVelocityY = 0;
             } else {
                 int tileY = (int) (newTop / tileHeight);
                 float tileBottom = (tileY + 1) * tileHeight;
                 resolvedY = tileBottom - collisionOffsetY;
+                // Optionally set playerVelocityY = 0 here as well
             }
         }
 
