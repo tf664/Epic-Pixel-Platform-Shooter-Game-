@@ -251,7 +251,6 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
 
     }
 
-
     private boolean checkBulletPenetration(Bullet bullet, Enemy enemy) {
         float bulletRadius = 10;
 
@@ -281,12 +280,15 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
         int cameraX = mapManager.getCameraX();
         int mapOffsetY = mapManager.getMapOffsetY();
         for (Enemy enemy : enemies) {
-            c.drawBitmap(
-                    GameEntityAssets.GRUNTTWO.getSprite(enemy.animFrame, 0),
-                    enemy.x - cameraX,
-                    enemy.y + mapOffsetY,
-                    null
-            );
+            int spriteColumn = (enemy.direction == 1) ? 0 : 1;
+            Bitmap sprite = GameEntityAssets.GRUNTTWO.getSprite(enemy.animFrame, spriteColumn);
+            float drawX;
+            if (spriteColumn == GameConstants.Facing_Direction.RIGHT) {
+                drawX = enemy.x - cameraX - 2 * GameConstants.GruntTwo.SCALE_MULTIPLIER; // 2 = pivot point for facing right
+            } else {
+                drawX = enemy.x - cameraX - 79 * GameConstants.GruntTwo.SCALE_MULTIPLIER; // 79 = pivot point for facing left
+            }
+            c.drawBitmap(sprite, drawX, enemy.y + mapOffsetY, null);
         }
     }
 
