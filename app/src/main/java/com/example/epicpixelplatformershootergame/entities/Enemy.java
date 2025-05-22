@@ -3,18 +3,19 @@ package com.example.epicpixelplatformershootergame.entities;
 import com.example.epicpixelplatformershootergame.helper.GameConstants;
 
 import java.util.List;
-import java.util.Random;
 
 public class Enemy {
     // Position & Movement
     public float x, y;
     public final float spawnX;
     public float velocityX = 2f; // TODO GameConstants
-    public int direction = 1; // TODO GameConstants
+    public int direction = 1; // Use 1 for right, -1 for left
 
     // Patrol Behavior
     public float patrolLeft, patrolRight;
-    private final Random rand = new Random();
+    private boolean chasingPlayer = false;
+    private static final long CHASE_FORGET_TIME_MS = 3000; // 3 seconds after losing sight
+    private long lastSeenTime = 0;
 
     // Health
     private int health = 3; // TODO GameConstants
@@ -33,6 +34,7 @@ public class Enemy {
 
     // Animation
     private enum AnimState {IDLE, SHOOTING1, RELOADING, SHOOTING2, RETURN_IDLE}
+
     private AnimState animState = AnimState.IDLE;
     public int animFrame = 0;
     private int animFrameIdx = 0;
@@ -51,43 +53,63 @@ public class Enemy {
         this.spawnX = x;
         this.patrolLeft = x - 200;  // TODO GameConstants patrol 200px left/right
         this.patrolRight = x + 200;  // TODO GameConstants
-    }
-
-    public void update(float leftBound, float rightBound) {
-        x += velocityX * direction;
-        if (x < leftBound) {
-            x = leftBound;
-            direction = 1;
-        } else if (x > rightBound) {
-            x = rightBound;
-            direction = -1;
-        }
-
-        updateReload();
-        updateAnimation();
+        this.direction = 1; // Default facing right
     }
 
     public void updatePatrol(Player player) {
         float playerX = player.playerX;
         float playerY = player.playerY;
-        if (isPlayerInSight(playerX, playerY)) {
-            // Pursue player within patrol bounds
-            if (playerX < x && x > patrolLeft) {
+        long now = System.currentTimeMillis();
+
+        boolean playerInSight = isPlayerInSight(playerX, playerY);
+
+        if (playerInSight) {
+            chasingPlayer = true;
+            lastSeenTime = now;
+
+            // Face the player
+            if (playerX < x) {
                 direction = -1;
-                x += velocityX * direction;
-            } else if (playerX > x && x < patrolRight) {
+            } else {
                 direction = 1;
-                x += velocityX * direction;
+            }
+
+            // Calculate potential next position towards player
+            float nextX = x + velocityX * direction;
+
+            // Move only if nextX is inside patrol bounds
+            if (nextX >= patrolLeft && nextX <= patrolRight) {
+                x = nextX;
+            } else {
+                // If nextX would go out of bounds, clamp to bound and stop moving
+                if (nextX < patrolLeft) {
+                    x = patrolLeft;
+                } else if (nextX > patrolRight) {
+                    x = patrolRight;
+                }
+                // IMPORTANT: Do NOT flip direction or move away here, just stay put facing player
             }
         } else {
-            // Regular patrol logic
-            x += velocityX * direction;
-            if (x < patrolLeft) {
-                x = patrolLeft;
-                direction = 1;
-            } else if (x > patrolRight) {
-                x = patrolRight;
-                direction = -1;
+            // Player lost sight: check if chasing should end
+            if (chasingPlayer && now - lastSeenTime > CHASE_FORGET_TIME_MS) {
+                chasingPlayer = false;
+            }
+
+            if (!chasingPlayer) {
+                // Patrol left and right within bounds, flip direction when reaching bounds
+                if (direction == -1) {
+                    x -= velocityX;
+                    if (x <= patrolLeft) {
+                        x = patrolLeft;
+                        direction = 1;
+                    }
+                } else if (direction == 1) {
+                    x += velocityX;
+                    if (x >= patrolRight) {
+                        x = patrolRight;
+                        direction = -1;
+                    }
+                }
             }
         }
 
@@ -116,7 +138,10 @@ public class Enemy {
             if (now - reloadStartTime >= RELOAD_TIME_MS) {
                 isReloading = false;
                 shotsFired = 0;
-                // Reset the animation state to IDLE after reloading
+                if (animState == AnimState.RELOADING) {
+                    animState = AnimState.RETURN_IDLE;  // Force back to idle flow
+                    animFrameIdx = 0;
+                }
             }
         }
     }
@@ -214,20 +239,23 @@ public class Enemy {
 
     public void tryShoot(List<Bullet> enemyBullets, float targetX, float targetY) {
         if (isReloading || animState != AnimState.IDLE)
-            return; // Blocks shooting during reload or animation
+            return;
 
         long now = System.currentTimeMillis();
+
         float gunOffsetX = direction > 0 ? 80 : 10;
         float gunOffsetY = 80;
         float gunX = x + gunOffsetX;
         float gunY = y + gunOffsetY;
+
         float playerOffsetXFromGun = targetX - gunX;
         float playerOffsetYFromGun = Math.abs(targetY - gunY);
 
         boolean facingPlayer = (playerOffsetXFromGun > 0 && direction == 1) ||
                 (playerOffsetXFromGun < 0 && direction == -1);
+
         boolean inSight = Math.abs(playerOffsetXFromGun) < GameConstants.Enemy.SHOOT_RANGE &&
-                Math.abs(playerOffsetYFromGun) < GameConstants.Enemy.VERTICAL_TOLERANCE &&
+                playerOffsetYFromGun < GameConstants.Enemy.VERTICAL_TOLERANCE &&
                 facingPlayer;
 
         if (inSight && now - lastShootTime >= SHOOT_COOLDOWN_MS && shotsFired < MAX_SHOTS) {

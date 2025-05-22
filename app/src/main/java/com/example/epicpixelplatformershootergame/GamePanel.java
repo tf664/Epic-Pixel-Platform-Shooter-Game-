@@ -255,7 +255,6 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
         // Update enemies
         for (Enemy enemy : enemies) {
             enemy.updatePatrol(player);
-            enemy.updateAnimation();
             float playerCenterX = player.playerX + GameConstants.Player.WIDTH / 2f;
             float playerCenterY = player.playerY + GameConstants.Player.HEIGHT / 2f;
             enemy.tryShoot(enemyBullets, playerCenterX, playerCenterY);
