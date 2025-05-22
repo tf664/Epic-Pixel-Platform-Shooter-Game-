@@ -9,21 +9,40 @@ public class Enemy {
     public final float spawnX;
     public float velocityX = 2f; // TODO GameConstants
     public int direction = 1; // TODO GameConstants
-    private int health = 3;
+    private int health = 3;  // TODO GameConstants
     private long lastShootTime = 0;
-    private static final long SHOOT_COOLDOWN_MS = 800; // 1.5 seconds
+    private static final long SHOOT_COOLDOWN_MS = 800; // 1.5 seconds  // TODO GameConstants
 
-    public float patrolLeft = 800, patrolRight = 1800; // TODO GameConstants
+
+    public float patrolLeft, patrolRight; // TODO GameConstants
+
     // Animation
+    private enum AnimState {IDLE, SHOOTING1, RELOADING, SHOOTING2, RETURN_IDLE}
+
+    private AnimState animState = AnimState.IDLE;
+
     public int animFrame = 0;
-    public int animTick = 0;
+    private static final int[] IDLE_FRAMES = {0};
+    private static final int[] SHOOTING1_FRAMES = {1, 2, 3, 4, 5};
+    private static final int[] RELOADING_FRAMES = {6, 7, 8, 9, 10, 11, 12};
+    private static final int[] SHOOTING2_FRAMES = {13, 14, 15, 16, 17};
+    private static final int[] RETURN_IDLE_FRAMES = {18, 19, 20, 21};
+
+    private int animFrameIdx = 0;
+    private int animTick = 0;
+    private static final int ANIM_SPEED = 10;
+
+    private int shotsFired = 0;
+    private boolean shouldShoot = false;
+    private List<Bullet> pendingBullets;
+    private float pendingGunX, pendingGunY, pendingVx, pendingVy;
 
     public Enemy(float x, float y) {
         this.x = x;
         this.y = y;
         this.spawnX = x;
-        this.patrolLeft = x - 200;  // Example: patrol 200px left/right
-        this.patrolRight = x + 200;
+        this.patrolLeft = x - 200;  // TODO GameConstants patrol 200px left/right
+        this.patrolRight = x + 200;  // TODO GameConstants
     }
 
     public void update(float leftBound, float rightBound) {
@@ -50,9 +69,81 @@ public class Enemy {
 
     public void updateAnimation() {
         animTick++;
-        if (animTick >= 10) { // Adjust speed as needed
+        if (animTick >= ANIM_SPEED) {
             animTick = 0;
-            animFrame = (animFrame + 1) % 59; // 59 frames TODO
+            switch (animState) {
+                case IDLE:
+                    animFrame = IDLE_FRAMES[0];
+                    break;
+                case SHOOTING1:
+                    animFrame = SHOOTING1_FRAMES[animFrameIdx];
+                    if (animFrameIdx == 2 && shouldShoot) { // frame 3 (index 2)
+                        spawnBullet();
+                        shouldShoot = false;
+                    }
+                    animFrameIdx++;
+                    if (animFrameIdx >= SHOOTING1_FRAMES.length) {
+                        if (shotsFired >= 5) {
+                            animState = AnimState.RELOADING;
+                        } else {
+                            animState = AnimState.RETURN_IDLE;
+                        }
+                        animFrameIdx = 0;
+                    }
+                    break;
+                case SHOOTING2:
+                    animFrame = SHOOTING2_FRAMES[animFrameIdx];
+                    if (animFrameIdx == 1 && shouldShoot) { // frame 14 (index 1)
+                        spawnBullet();
+                        shouldShoot = false;
+                    }
+                    animFrameIdx++;
+                    if (animFrameIdx >= SHOOTING2_FRAMES.length) {
+                        if (shotsFired >= 5) {
+                            animState = AnimState.RELOADING;
+                        } else {
+                            animState = AnimState.RETURN_IDLE;
+                        }
+                        animFrameIdx = 0;
+                    }
+                    break;
+                case RELOADING:
+                    animFrame = RELOADING_FRAMES[animFrameIdx++];
+                    if (animFrameIdx >= RELOADING_FRAMES.length) {
+                        shotsFired = 0;
+                        animState = AnimState.RETURN_IDLE;
+                        animFrameIdx = 0;
+                    }
+                    break;
+                case RETURN_IDLE:
+                    animFrame = RETURN_IDLE_FRAMES[animFrameIdx++];
+                    if (animFrameIdx >= RETURN_IDLE_FRAMES.length) {
+                        animState = AnimState.IDLE;
+                        animFrameIdx = 0;
+                    }
+                    break;
+            }
+        }
+    }
+
+    public void startShooting(List<Bullet> enemyBullets, float gunX, float gunY, float vx, float vy, boolean isSecond) {
+        if (animState == AnimState.IDLE) {
+            animState = isSecond ? AnimState.SHOOTING2 : AnimState.SHOOTING1;
+            animFrameIdx = 0;
+            shouldShoot = true;
+            pendingBullets = enemyBullets;
+            pendingGunX = gunX;
+            pendingGunY = gunY;
+            pendingVx = vx;
+            pendingVy = vy;
+        }
+    }
+
+    private void spawnBullet() {
+        if (pendingBullets != null) {
+            pendingBullets.add(new Bullet(pendingGunX, pendingGunY, pendingVx, pendingVy));
+            lastShootTime = System.currentTimeMillis();
+            shotsFired++;
         }
     }
 
@@ -66,26 +157,23 @@ public class Enemy {
 
     public void tryShoot(List<Bullet> enemyBullets, float targetX, float targetY) {
         long now = System.currentTimeMillis();
-
-        float gunOffsetX = direction > 0 ? 80 : 10; // match bullet spawn
+        float gunOffsetX = direction > 0 ? 80 : 10;
         float gunOffsetY = 80;
-
         float gunX = x + gunOffsetX;
         float gunY = y + gunOffsetY;
-
         float playerOffsetXFromGun = targetX - gunX;
         float playerOffsetYFromGun = Math.abs(targetY - gunY);
 
         boolean facingPlayer = (playerOffsetXFromGun > 0 && direction == 1) ||
                 (playerOffsetXFromGun < 0 && direction == -1);
-        if (Math.abs(playerOffsetXFromGun) < 2500 && playerOffsetYFromGun < 40 && facingPlayer) {
-            if (now - lastShootTime >= SHOOT_COOLDOWN_MS) {
-                float bulletSpeed = 12f;
-                float vx = bulletSpeed * direction; // Use direction for left/right
+        if (Math.abs(playerOffsetXFromGun) < 2500 && playerOffsetYFromGun < 40 && facingPlayer) {  // TODO GameConstants
+            if (animState == AnimState.IDLE && now - lastShootTime >= SHOOT_COOLDOWN_MS && shotsFired < 5) {
+                float bulletSpeed = 12f;  // TODO GameConstants
+                float vx = bulletSpeed * direction;
                 float vy = 0;
-
-                enemyBullets.add(new Bullet(gunX, gunY, vx, vy));
-                lastShootTime = now;
+                // Alternate between SHOOTING1 and SHOOTING2 for variety, or always use SHOOTING1
+                boolean isSecond = (shotsFired % 2 == 1);
+                startShooting(enemyBullets, gunX, gunY, vx, vy, isSecond);
             }
         }
     }

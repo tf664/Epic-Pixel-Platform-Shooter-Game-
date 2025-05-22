@@ -183,4 +183,9 @@ public class Player {
         float dir = playerFaceDirection == GameConstants.Facing_Direction.RIGHT ? 1 : -1;
         bullets.add(new Bullet(bulletX, bulletY, bulletSpeed * dir, 0));
     }
+
+    public void takeDamage(int dmg) {
+        GameConstants.Player.HEALTH -= dmg;
+        if (GameConstants.Player.HEALTH < 0) GameConstants.Player.HEALTH= 0;
+    }
 }
