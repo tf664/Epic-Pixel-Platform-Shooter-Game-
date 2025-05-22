@@ -67,27 +67,13 @@ public class Enemy {
             chasingPlayer = true;
             lastSeenTime = now;
 
-            // Face the player
-            if (playerX < x) {
-                direction = -1;
-            } else {
-                direction = 1;
-            }
+            direction = playerX < x ? -1 : 1;
 
-            // Calculate potential next position towards player
             float nextX = x + velocityX * direction;
-
-            // Move only if nextX is inside patrol bounds
             if (nextX >= patrolLeft && nextX <= patrolRight) {
                 x = nextX;
             } else {
-                // If nextX would go out of bounds, clamp to bound and stop moving
-                if (nextX < patrolLeft) {
-                    x = patrolLeft;
-                } else if (nextX > patrolRight) {
-                    x = patrolRight;
-                }
-                // IMPORTANT: Do NOT flip direction or move away here, just stay put facing player
+                x = Math.max(patrolLeft, Math.min(patrolRight, x));
             }
         } else {
             // Player lost sight: check if chasing should end

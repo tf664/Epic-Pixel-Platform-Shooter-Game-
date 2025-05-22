@@ -21,7 +21,6 @@ import com.example.epicpixelplatformershootergame.entities.Bullet;
 import com.example.epicpixelplatformershootergame.entities.Enemy;
 import com.example.epicpixelplatformershootergame.entities.GameEntityAssets;
 import com.example.epicpixelplatformershootergame.entities.Player;
-import com.example.epicpixelplatformershootergame.environments.GameMap;
 import com.example.epicpixelplatformershootergame.environments.MapManager;
 import com.example.epicpixelplatformershootergame.helper.GameConstants;
 import com.example.epicpixelplatformershootergame.inputs.TouchEvents;
