@@ -78,6 +78,8 @@ public final class GameConstants {
         public static final int SCALE_MULTIPLIER = 6;
         public static final int WIDTH = FRAME_WIDTH * SCALE_MULTIPLIER;
         public static final int HEIGHT = FRAME_HEIGHT * SCALE_MULTIPLIER;
+        public static final int TOTAL_HEALTH = 5;
+        public static int HEALTH = TOTAL_HEALTH;
     }
 
     public static final class GruntTwo {

@@ -138,6 +138,7 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
         mapManager.draw(c);
 
         player.drawPlayer(c);
+        drawPlayerHealthBar(c);
         drawBullets(c);
         drawEnemyBullets(c);
         drawEnemies(c);
@@ -192,10 +193,11 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
                 }
             }
         }
-        // Check collision with player (simple circle-rectangle check)
+        // Check collision with player
         for (Bullet bullet : enemyBullets) {
             if (bullet.active && checkPlayerHitByEnemyBullet(bullet)) {
                 // TODO: handle player damage or death
+                player.takeDamage(1);
                 bullet.active = false;
             }
         }
@@ -284,6 +286,33 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
         int timeLeft = Math.max(0, levelTimeSeconds - (int) elapsed);
 
         c.drawText("O: " + timeLeft, x, y, timerPaint);
+    }
+
+    private void drawPlayerHealthBar(Canvas c) {
+        int maxHealth = GameConstants.Player.TOTAL_HEALTH;
+        int currentHealth = GameConstants.Player.HEALTH;
+        int barWidth = 100; // TODO move design to GameConstants
+        int barHeight = 16;
+        int barX = (int) (player.playerX - mapManager.getCameraX() + GameConstants.Player.WIDTH / 2 - barWidth / 2);
+        int barY = (int) (player.playerY + mapManager.getMapOffsetY() - 30);
+
+        // Background
+        Paint bgPaint = new Paint();
+        bgPaint.setColor(Color.DKGRAY);
+        c.drawRect(barX, barY, barX + barWidth, barY + barHeight, bgPaint);
+
+        // Health
+        Paint healthPaint = new Paint();
+        healthPaint.setColor(Color.GREEN);
+        int healthWidth = (int) (barWidth * (currentHealth / (float) maxHealth));
+        c.drawRect(barX, barY, barX + healthWidth, barY + barHeight, healthPaint);
+
+        // Border
+        Paint borderPaint = new Paint();
+        borderPaint.setStyle(Paint.Style.STROKE);
+        borderPaint.setColor(Color.BLACK);
+        borderPaint.setStrokeWidth(2);
+        c.drawRect(barX, barY, barX + barWidth, barY + barHeight, borderPaint);
     }
 
     private void drawDebug(Canvas c) {
