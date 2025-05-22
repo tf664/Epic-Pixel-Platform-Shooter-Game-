@@ -72,7 +72,7 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
         Typeface pixelFont = Typeface.createFromAsset(context.getAssets(), "fonts/VT323-Regular.ttf");
         gameState = new GameState(btnUnpressed, btnPressed, pixelFont, context);
 
-        player = new Player(touchEvents, mapManager, bullets);
+        player = new Player(touchEvents, mapManager, bullets, gameState);
         enemies.add(new Enemy(1000, 330)); // TODO hardcoded
         enemies.add(new Enemy(1500, 330)); // TODO hardcoded
     }
@@ -174,8 +174,9 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
         drawEnemyBullets(c);
 
         // UI elements
-        drawPlayerHealthBar(c);
         gameState.drawTimer(c);
+        gameState.drawGunAndAmmo(c);
+        drawPlayerHealthBar(c);
         drawDebug(c);
         touchEvents.draw(c);
 
@@ -456,6 +457,7 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
         player.moveLeft = false;
         player.moveRight = false;
         player.isShooting = false;
+        gameState.reloadAmmo();
         player.pendingShoot = false;
         GameConstants.Player.HEALTH = GameConstants.Player.TOTAL_HEALTH;
 

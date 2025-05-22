@@ -3,6 +3,7 @@ package com.example.epicpixelplatformershootergame.entities;
 import android.graphics.Canvas;
 import android.graphics.RectF;
 
+import com.example.epicpixelplatformershootergame.GameState;
 import com.example.epicpixelplatformershootergame.entities.Bullet;
 import com.example.epicpixelplatformershootergame.entities.Enemy;
 import com.example.epicpixelplatformershootergame.entities.GameEntityAssets;
@@ -23,6 +24,7 @@ public class Player {
     public boolean isJumping = false;
     public boolean jumpButtonHeld = false;
 
+    private GameState gameState;
     public boolean isShooting = false;
     public boolean pendingShoot = false;
 
@@ -33,10 +35,11 @@ public class Player {
     private MapManager mapManager;
     private List<Bullet> bullets;
 
-    public Player(TouchEvents touchEvents, MapManager mapManager, List<Bullet> bullets) {
+    public Player(TouchEvents touchEvents, MapManager mapManager, List<Bullet> bullets, GameState gameState) {
         this.touchEvents = touchEvents;
         this.mapManager = mapManager;
         this.bullets = bullets;
+        this.gameState = gameState;
     }
 
     public void setMoveLeft(boolean moveLeft) {
@@ -125,6 +128,7 @@ public class Player {
     }
 
     public void startShooting() {
+        if (gameState != null && gameState.getAmmoCount() == 0) return;
         isShooting = true;
         playerAnimationFrame = 0;
         setPlayerShootingAnimation();
@@ -177,15 +181,18 @@ public class Player {
     }
 
     public void spawnBullet() {
-        float bulletSpeed = 20f;
-        float bulletX = playerX + (float) GameConstants.Player.WIDTH / 2;
-        float bulletY = playerY + (float) GameConstants.Player.HEIGHT / 2;
-        float dir = playerFaceDirection == GameConstants.Facing_Direction.RIGHT ? 1 : -1;
-        bullets.add(new Bullet(bulletX, bulletY, bulletSpeed * dir, 0));
+        if (gameState != null && gameState.getAmmoCount() > 0) {
+            float bulletSpeed = 20f;
+            float bulletX = playerX + (float) GameConstants.Player.WIDTH / 2;
+            float bulletY = playerY + (float) GameConstants.Player.HEIGHT / 2;
+            float dir = playerFaceDirection == GameConstants.Facing_Direction.RIGHT ? 1 : -1;
+            bullets.add(new Bullet(bulletX, bulletY, bulletSpeed * dir, 0));
+            gameState.decreaseAmmo();
+        }
     }
 
     public void takeDamage(int dmg) {
         GameConstants.Player.HEALTH -= dmg;
-        if (GameConstants.Player.HEALTH < 0) GameConstants.Player.HEALTH= 0;
+        if (GameConstants.Player.HEALTH < 0) GameConstants.Player.HEALTH = 0;
     }
 }
