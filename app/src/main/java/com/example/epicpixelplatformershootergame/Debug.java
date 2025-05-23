@@ -34,6 +34,14 @@ public class Debug {
         System.out.println("Columns: " + columns); // debug
     }
 
+    public static void debugFPS(int fps, long now, long lastFPSCheck) {
+        if (now - lastFPSCheck >= 1000) {
+            System.out.println("FPS: " + fps);
+            fps = 0;
+            lastFPSCheck += 1000;
+        }
+    }
+
     // Rectangle around character
     public static void drawDebugPlayer(Canvas c, float x, float y, float spriteWidth, float spriteHeight) {
         Paint paint = new Paint();

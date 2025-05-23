@@ -37,7 +37,6 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
     private GameLoop gameLoop;
     private TouchEvents touchEvents;
 
-    private int gruntTwoAnimationIndexY;
     private List<Enemy> enemies = new ArrayList<>();
     private List<Bullet> bullets = new ArrayList<>();
     private List<Bullet> enemyBullets = new ArrayList<>();
@@ -245,7 +244,7 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
         surfaceHolder.unlockCanvasAndPost(c);
     }
 
-    public void update(double delta) {
+    public void update() {
         if (gameState.getState() == GameState.State.GAME_OVER) {
             resetGameObjects();
             return;

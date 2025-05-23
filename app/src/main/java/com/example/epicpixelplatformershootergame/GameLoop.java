@@ -14,7 +14,7 @@ public class GameLoop implements Runnable {
 
     @Override
     public void run() {
-        final int TARGET_FPS = 80;
+        final int TARGET_FPS = 60;
         final long FRAME_TIME = 1000 / TARGET_FPS; // ms per frame
 
         long lastTime = System.currentTimeMillis();
@@ -26,8 +26,7 @@ public class GameLoop implements Runnable {
             long elapsed = now - lastTime;
 
             if (elapsed >= FRAME_TIME) {
-                double delta = elapsed / 1000.0;
-                gamePanel.update(delta);
+                gamePanel.update();
                 gamePanel.render();
                 lastTime = now;
                 fps++;
@@ -40,11 +39,8 @@ public class GameLoop implements Runnable {
             }
 
             if (GameConstants.DebugMode.DEBUG_MODE) {
-                if (now - lastFPSCheck >= 1000) {
-                    System.out.println("FPS: " + fps);
-                    fps = 0;
-                    lastFPSCheck += 1000;
-                }
+                Debug.debugFPS(fps, now, lastFPSCheck);
+
             }
         }
     }
