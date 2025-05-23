@@ -11,7 +11,8 @@ import com.example.epicpixelplatformershootergame.helper.interfaces.BitmapMethod
 
 public enum GameEntityAssets implements BitmapMethods {
     PLAYER(R.drawable.player_spritesheet_walking_shooting, GameConstants.Player.FRAME_WIDTH, GameConstants.Player.FRAME_HEIGHT),
-    GRUNTTWO(R.drawable.grunttwo_spritesheet_shooting, GameConstants.GruntTwo.FRAME_WIDTH, GameConstants.GruntTwo.FRAME_HEIGHT);
+    GRUNTTWO(R.drawable.grunttwo_spritesheet_shooting, GameConstants.GruntTwo.FRAME_WIDTH, GameConstants.GruntTwo.FRAME_HEIGHT),
+    HORSE(R.drawable.players_horse, GameConstants.Horse.WIDTH, GameConstants.Horse.HEIGHT);
 
     private int boxWidth, boxHeight;
     private Bitmap spriteSheet;
@@ -53,8 +54,11 @@ public enum GameEntityAssets implements BitmapMethods {
                 return GameConstants.Player.SCALE_MULTIPLIER;
             case GRUNTTWO:
                 return GameConstants.GruntTwo.SCALE_MULTIPLIER;
+            case HORSE:
+                return GameConstants.Horse.SCALE_MULTIPLIER;
+            default:
+                return 1; // Safe default
         }
-        return 0;
     }
 
     public Bitmap getSprite(int yPos, int xPos) {

@@ -20,6 +20,7 @@ import androidx.annotation.NonNull;
 import com.example.epicpixelplatformershootergame.entities.Bullet;
 import com.example.epicpixelplatformershootergame.entities.Enemy;
 import com.example.epicpixelplatformershootergame.entities.GameEntityAssets;
+import com.example.epicpixelplatformershootergame.entities.Horse;
 import com.example.epicpixelplatformershootergame.entities.Player;
 import com.example.epicpixelplatformershootergame.environments.MapManager;
 import com.example.epicpixelplatformershootergame.helper.GameConstants;
@@ -52,6 +53,7 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
     private final PlayerCollisionHandler collisionHandler = new PlayerCollisionHandler();
 
     private Player player;
+    private Horse horse;
 
     public GamePanel(Context context) {
         super(context);
@@ -76,6 +78,11 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
         gameState = new GameState(buttonSheet, pixelFont, context);
 
         player = new Player(touchEvents, mapManager, bullets, gameState);
+        int mapPixelWidth = (GameConstants.Map.tileIds[0].length) * GameConstants.FloorTile.WIDTH;
+        int horseX = mapPixelWidth - GameConstants.Horse.WIDTH + 5200;
+        int horseY = 420; // TODO adjust as needed for your ground level
+
+        horse = new Horse(horseX, horseY);
 
         // Spawn enemies
         for (int i = 0; i < GameConstants.Enemy.SPAWN_X.length; i++) {
@@ -218,6 +225,7 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
         }
 
         player.drawPlayer(c);
+        horse.draw(c, mapManager.getCameraX(), mapManager.getMapOffsetY());
         drawEnemies(c);
 
         drawBullets(c);
@@ -303,6 +311,16 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
 
         if (GameConstants.Player.HEALTH <= 0 && gameState.getState() != GameState.State.GAME_OVER) {
             gameState.setGameOver();
+        }
+
+        boolean playerReachedHorse =
+                player.playerX + GameConstants.Player.WIDTH > horse.x &&
+                        player.playerX < horse.x + GameConstants.Horse.WIDTH &&
+                        player.playerY + GameConstants.Player.HEIGHT > horse.y &&
+                        player.playerY < horse.y + GameConstants.Horse.HEIGHT;
+
+        if (playerReachedHorse) {
+            gameState.setGameOver(); // or gameState.setState(GameState.GAME_OVER);
         }
 
         gameState.updateTimer();

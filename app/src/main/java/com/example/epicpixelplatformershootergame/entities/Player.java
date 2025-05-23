@@ -85,6 +85,7 @@ public class Player {
         playerAnimationIndexY = rightAnimY[playerAnimationFrame];
         playerAnimationIndexX = rightAnimX[playerAnimationFrame];
     }
+
     public void setPlayerAnimationLeft() {
         int[] leftAnimY = {1, 1, 2, 2};
         int[] leftAnimX = {2, 3, 0, 1};
@@ -92,6 +93,7 @@ public class Player {
         playerAnimationIndexY = leftAnimY[playerAnimationFrame];
         playerAnimationIndexX = leftAnimX[playerAnimationFrame];
     }
+
     public void setPlayerShootingAnimation() {
         final int[] rightShootingAnimY = {2, 2, 3};
         final int[] rightShootingAnimX = {2, 3, 0};

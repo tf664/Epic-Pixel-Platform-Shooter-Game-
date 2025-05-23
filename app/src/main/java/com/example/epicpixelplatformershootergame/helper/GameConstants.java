@@ -122,7 +122,7 @@ public final class GameConstants {
     }
 
     public static final class Enemy {
-        public static final float[] SPAWN_X = {1200, 2000, 2700};
+        public static final float[] SPAWN_X = {2000, 2700, 4000};
         public static final float[] SPAWN_Y = {552, 552, 552};
         public static final float SHOOT_RANGE = 900f;
         public static final float VERTICAL_TOLERANCE = 50f;
@@ -136,6 +136,12 @@ public final class GameConstants {
         public static final int COLLISION_HEIGHT = 41;
         public static final int COLLISION_OFFSET_X = 0;
         public static final int COLLISION_OFFSET_Y = 0;
+    }
+
+    public static class Horse {
+        public static final int WIDTH = 105;
+        public static final int HEIGHT = 100;
+        public static final int SCALE_MULTIPLIER = 4;
     }
 
     public static final class Weapon {
