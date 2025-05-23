@@ -3,7 +3,9 @@ package com.example.epicpixelplatformershootergame.environments;
 import android.graphics.Canvas;
 
 import com.example.epicpixelplatformershootergame.helper.GameConstants;
-
+/**
+ * Manages the current game map, camera position, and drawing of map tiles.
+ */
 public class MapManager {
     private GameMap currentMap;
     private int screenWidth = GameConstants.Screen.SCREENWIDTH;
@@ -15,6 +17,10 @@ public class MapManager {
         initMainMap();
     }
 
+    /**
+     * Draws the visible portion of the map to the given canvas.
+     * @param c The canvas to draw on.
+     */
     public void draw(Canvas c) {
         int tileWidth = GameConstants.FloorTile.WIDTH;
         int tileHeight = GameConstants.FloorTile.HEIGHT;
@@ -33,7 +39,10 @@ public class MapManager {
         }
     }
 
-    // Update the camera position based on player position
+    /**
+     * Updates the camera position based on the player's X coordinate and the Thresholds.
+     * @param playerX The player's X position in world coordinates.
+     */
     public void updateCamera(float playerX) {
         int playerScreenX = (int) playerX - cameraX;
         if (playerScreenX < GameConstants.Camera.leftThreshold) {
@@ -56,6 +65,11 @@ public class MapManager {
         return screenHeight - (currentMap.getArrayHeight() * GameConstants.FloorTile.HEIGHT);
     }
 
+    /**
+     * Updates the screen size and recalculates map dimensions.
+     * @param w The new screen width.
+     * @param h The new screen height.
+     */
     public void updateScreenSize(int w, int h) {
         this.screenWidth = w;
         this.screenHeight = h;

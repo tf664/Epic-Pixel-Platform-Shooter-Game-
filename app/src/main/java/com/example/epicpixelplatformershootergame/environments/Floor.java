@@ -32,7 +32,11 @@ public enum Floor implements BitmapMethods {
         }
     }
 
-
+    /**
+     * Returns the bitmap for the specified tile ID.
+     * @param id Tile ID.
+     * @return Bitmap for the tile, or a fallback if out of range.
+     */
     public Bitmap getTile(int id) {
         if (id < 0 || id >= tiles.length)
             return tiles[0]; // fallback tile

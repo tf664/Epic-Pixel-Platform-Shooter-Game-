@@ -11,7 +11,7 @@ import java.util.List;
 public final class GameConstants {
 
     public static final class DebugMode {
-        public static final boolean DEBUG_MODE = true;
+        public static final boolean DEBUG_MODE = false;
     }
 
     /**
@@ -122,8 +122,9 @@ public final class GameConstants {
     }
 
     public static final class Enemy {
-        public static final float[] SPAWN_X = {2000, 2700, 4000};
-        public static final float[] SPAWN_Y = {552, 552, 552};
+        public static final float LAST_ENEMY_X =Map.tileIds[0].length * FloorTile.WIDTH - GruntTwo.COLLISION_WIDTH + 4500; // TODO fix end of map calculation
+        public static final float[] SPAWN_X = {2000, 2700, 4000, LAST_ENEMY_X };
+        public static final float[] SPAWN_Y = {552, 552, 552, 552};
         public static final float SHOOT_RANGE = 900f;
         public static final float VERTICAL_TOLERANCE = 50f;
     }
@@ -139,9 +140,13 @@ public final class GameConstants {
     }
 
     public static class Horse {
-        public static final int WIDTH = 105;
+        public static final int WIDTH = 150;
         public static final int HEIGHT = 100;
         public static final int SCALE_MULTIPLIER = 4;
+        public static final int mapPixelWidth = Map.tileIds[0].length * FloorTile.WIDTH;
+        public static final int horseX = mapPixelWidth - GameConstants.Horse.WIDTH + 5200; // TODO fix end of map calculation
+        public static final int horseY = 420; // TODO implement an dynamic way of getting the floor at the X
+
     }
 
     public static final class Weapon {

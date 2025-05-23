@@ -153,6 +153,10 @@ public class TouchEvents {
         return Math.hypot(x - centerX, y - centerY) <= radius;
     }
 
+    /**
+     * Returns true if a jump input is buffered.
+     * @return true if jump is buffered.
+     */
     public boolean hasBufferedJump() {
         return ((System.currentTimeMillis() - jumpBufferedAt) <= GameConstants.Physics.MAX_JUMP_BUFFER_MS)
                 && jumpBufferedAt != 0;

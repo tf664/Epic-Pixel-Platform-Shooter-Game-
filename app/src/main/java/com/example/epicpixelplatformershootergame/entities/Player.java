@@ -42,18 +42,30 @@ public class Player {
         this.gameState = gameState;
     }
 
+    /**
+     * Sets whether the player is moving left.
+     * @param moveLeft true to move left, false otherwise.
+     */
     public void setMoveLeft(boolean moveLeft) {
         this.moveLeft = moveLeft;
         if (moveLeft)
             playerFaceDirection = GameConstants.Facing_Direction.LEFT;
     }
 
+    /**
+     * Sets whether the player is moving right.
+     * @param moveRight true to move right, false otherwise.
+     */
     public void setMoveRight(boolean moveRight) {
         this.moveRight = moveRight;
         if (moveRight)
             playerFaceDirection = GameConstants.Facing_Direction.RIGHT;
     }
 
+    /**
+     * Sets whether the jump button is held.
+     * @param held true if jump button is held.
+     */
     public void setJumpButtonHeld(boolean held) {
         this.jumpButtonHeld = held;
     }
@@ -144,6 +156,10 @@ public class Player {
         }
     }
 
+    /**
+     * Draws the player sprite on the canvas.
+     * @param c Canvas to draw on.
+     */
     public void drawPlayer(Canvas c) {
         int mapOffsetY = mapManager.getMapOffsetY();
         int cameraX = mapManager.getCameraX();
@@ -175,6 +191,11 @@ public class Player {
             playerVelocityX = moveSpeed;
     }
 
+    /**
+     * Clamps the player's X position within the map bounds.
+     * @param nextX Proposed next X position.
+     * @return Clamped X position.
+     */
     public float clampPlayerPosition(float nextX) {
         int mapPixelWidth = mapManager.getCurrentMap().getArrayWidth() * GameConstants.FloorTile.WIDTH;
         return Math.max(0, Math.min(nextX, mapPixelWidth - GameConstants.Player.WIDTH));

@@ -2,16 +2,26 @@ package com.example.epicpixelplatformershootergame;
 
 import com.example.epicpixelplatformershootergame.helper.GameConstants;
 
+/**
+ * Handles the main game loop, updating and rendering the game at a fixed frame rate.
+ */
 public class GameLoop implements Runnable {
     private Thread gameThread;
     private GamePanel gamePanel;
 
 
+    /**
+     * Constructs a new GameLoop for the given GamePanel.
+     * @param gamePanel The main game panel to update and render.
+     */
     public GameLoop(GamePanel gamePanel) {
         this.gamePanel = gamePanel;
         gameThread = new Thread(this);
     }
 
+    /**
+     * Runs the main game loop, updating and rendering at the target FPS.
+     */
     @Override
     public void run() {
         final int TARGET_FPS = 60;
