@@ -55,11 +55,6 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
     // Collision handler
     private final PlayerCollisionHandler collisionHandler = new PlayerCollisionHandler();
 
-    /**
-     * Constructs the GamePanel, initializes game systems and entities.
-     *
-     * @param context context needed for Android lifecycle and resource access
-     */
     public GamePanel(Context context) {
         super(context); // Call the constructor of SurfaceView for acquiring resources, data,..
         Debug.setDebugMode(GameConstants.DebugMode.DEBUG_MODE);
@@ -108,14 +103,6 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
     public void surfaceDestroyed(@NonNull SurfaceHolder holder) {
     }
 
-    /**
-     * Handles screen size changes, updates scaling and map manager.
-     *
-     * @param w    New width
-     * @param h    New height
-     * @param oldw Old width
-     * @param oldh Old height
-     */
     @Override
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
         super.onSizeChanged(w, h, oldw, oldh);
@@ -140,12 +127,6 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
             background_back = Bitmap.createScaledBitmap(background_back, w, h, true);
     }
 
-    /**
-     * Handles all touch events, including menu and in-game controls.
-     *
-     * @param event MotionEvent to handle
-     * @return true if handled
-     */
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         GameState.State currentState = gameState.getState();
@@ -271,10 +252,6 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
 
 
     // --- Game Loop ---
-
-    /**
-     * Renders the entire game scene and UI to the canvas.
-     */
     public void render() {
         SurfaceHolder surfaceHolder = getHolder();
         Canvas c = surfaceHolder.lockCanvas();
@@ -318,9 +295,6 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
         surfaceHolder.unlockCanvasAndPost(c);
     }
 
-    /**
-     * Updates all game objects, handles input, collisions, and game state.
-     */
     public void update() {
         if (gameState.getState() == GameState.State.GAME_OVER) {
             resetGameObjects();
@@ -406,13 +380,6 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
         gameState.updateTimer();
     }
 
-    /**
-     * Checks if a bullet collides with an enemy.
-     *
-     * @param bullet The bullet to check
-     * @param enemy  The enemy to check
-     * @return true if collision detected
-     */
     private boolean checkBulletPenetration(Bullet bullet, Enemy enemy) {
         float bulletRadius = 10;
 
@@ -428,12 +395,6 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
     }
 
     // --- Drawing methods ---
-
-    /**
-     * Draws the background layers.
-     *
-     * @param c Canvas to draw on
-     */
     private void drawBackground(Canvas c) {
         c.drawColor(Color.BLACK);
         c.drawBitmap(background_back, 0, 0, null);
@@ -444,11 +405,6 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
             c.drawBitmap(background_front, x, 0, null);
     }
 
-    /**
-     * Draws all enemies.
-     *
-     * @param c Canvas to draw on
-     */
     private void drawEnemies(Canvas c) {
         int cameraX = mapManager.getCameraX();
         int mapOffsetY = mapManager.getMapOffsetY();
@@ -465,11 +421,6 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
         }
     }
 
-    /**
-     * Draws all player bullets.
-     *
-     * @param c Canvas to draw on
-     */
     private void drawBullets(Canvas c) {
         Paint paint = new Paint();
         paint.setColor(Color.YELLOW);
@@ -479,11 +430,7 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
         }
     }
 
-    /**
-     * Draws all enemy bullets.
-     *
-     * @param c Canvas to draw on
-     */
+
     private void drawEnemyBullets(Canvas c) {
         Paint paint = new Paint();
         paint.setColor(Color.CYAN);
@@ -493,11 +440,6 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
         }
     }
 
-    /**
-     * Draws the player's health bar above the player.
-     *
-     * @param c Canvas to draw on
-     */
     private void drawPlayerHealthBar(Canvas c) {
         int maxHealth = GameConstants.Player.TOTAL_HEALTH;
         int currentHealth = GameConstants.Player.HEALTH;
@@ -525,11 +467,6 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
         c.drawRect(barX, barY, barX + barWidth, barY + barHeight, borderPaint);
     }
 
-    /**
-     * Draws debug overlays if debug mode is enabled.
-     *
-     * @param c Canvas to draw on
-     */
     private void drawDebug(Canvas c) {
         if (Debug.isDebugMode()) {
             float collisionOffsetX = GameConstants.getCollisionOffsetX() * GameConstants.Player.SCALE_MULTIPLIER;
@@ -547,13 +484,6 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
 
 
     // --- Collision detection ---
-
-    /**
-     * Checks and resolves player collision with map.
-     *
-     * @param nextX Proposed next X position
-     * @param nextY Proposed next Y position
-     */
     public void checkPlayerCollision(float nextX, float nextY) {
         PlayerCollisionHandler.PlayerCollisionResult collisionResult = collisionHandler.checkCollision(
                 mapManager.getCurrentMap(), player.playerY,
@@ -567,12 +497,6 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
     }
 
 
-    /**
-     * Checks if the player is hit by an enemy bullet.
-     *
-     * @param bullet The bullet to check
-     * @return true if hit
-     */
     private boolean checkPlayerHitByEnemyBullet(Bullet bullet) {
         float bulletHitRadius = 6; // TODO GameConstants
 
@@ -594,11 +518,6 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
 
     // --- private resource loading#
 
-    /**
-     * Loads and scales background images.
-     *
-     * @param context Android context
-     */
     private void loadBackgrounds(Context context) {
         BitmapFactory.Options options = new BitmapFactory.Options();
         options.inPreferredConfig = Bitmap.Config.RGB_565;
@@ -609,12 +528,6 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
         background_front = Bitmap.createScaledBitmap(background_front, GAME_WIDTH, GAME_HEIGHT, true);
     }
 
-    /**
-     * Returns the scaled collision rectangle for an enemy.
-     *
-     * @param enemy The enemy
-     * @return RectF representing the collision box
-     */
     public static RectF getScaledCollisionRect(Enemy enemy) {
         float scale = GameConstants.GruntTwo.SCALE_MULTIPLIER;
 
@@ -647,11 +560,6 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
         }
     }
 
-    /**
-     * Gets the player instance.
-     *
-     * @return Player object
-     */
     public Player getPlayer() {
         return player;
     }
