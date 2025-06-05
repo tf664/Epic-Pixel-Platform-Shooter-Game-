@@ -11,7 +11,7 @@ import android.graphics.Typeface;
 import com.example.epicpixelplatformershootergame.helper.GameConstants;
 
 public class GameState {
-    public enum State {STARTING, RUNNING, GAME_OVER}
+    public enum State {STARTING, RUNNING, GAME_OVER, PAUSED, WINNING}
 
     private State state = State.STARTING;
 
@@ -33,7 +33,9 @@ public class GameState {
     private Bitmap startButtonBitmapUnpressed, startButtonBitmapPressed;
     private Bitmap restartButtonBitmapUnpressed, restartButtonBitmapPressed;
     private Bitmap settingsButtonBitmapUnpressed, settingsButtonBitmapPressed;
-    private boolean startButtonPressed = false, restartButtonPressed = false, settingsButtonPressed = false;
+    private Bitmap menuButtonBitmapUnpressed, menuButtonBitmapPressed;
+    // TODO pause button
+    private boolean startButtonPressed = false, restartButtonPressed = false, settingsButtonPressed = false, menuButtonPressed = false;
 
     public GameState(Bitmap buttonSheet, Typeface font, Context context) {
         this.pixelFont = font;
@@ -85,6 +87,20 @@ public class GameState {
                 (int) (buttonHeight * scaleFactor),
                 false
         );
+
+        menuButtonBitmapUnpressed = Bitmap.createScaledBitmap(
+                Bitmap.createBitmap(buttonSheet, 0, buttonHeight * 6, buttonWidth, buttonHeight),
+                (int) (buttonWidth * scaleFactor),
+                (int) (buttonHeight * scaleFactor),
+                false
+        );
+        menuButtonBitmapPressed = Bitmap.createScaledBitmap(
+                Bitmap.createBitmap(buttonSheet, 0, buttonHeight * 7, buttonWidth, buttonHeight),
+                (int) (buttonWidth * scaleFactor),
+                (int) (buttonHeight * scaleFactor),
+                false
+        );
+        // TODO pause button
 
 
         // Load hud.png and extract the clock icon
@@ -149,7 +165,7 @@ public class GameState {
     }
 
     public void drawGunAndAmmo(Canvas c) {
-        float gunX = 40;
+        float gunX = 40; // TODO GameConstants
         float gunY = 40;
         float scale = 5.0f;
 
@@ -192,6 +208,10 @@ public class GameState {
         return state;
     }
 
+    public void setState(State newState) {
+        this.state = newState;
+    }
+
     public void drawStartScreen(Canvas c) {
         Paint bgPaint = new Paint();
         bgPaint.setColor(Color.argb(230, 10, 10, 30));
@@ -207,28 +227,8 @@ public class GameState {
         Bitmap startBtn = startButtonPressed ? startButtonBitmapPressed : startButtonBitmapUnpressed;
         Bitmap settingsBtn = settingsButtonPressed ? settingsButtonBitmapPressed : settingsButtonBitmapUnpressed;
 
-        int startBtnWidth = startBtn.getWidth();
-        int startBtnX = (GameConstants.Screen.SCREENWIDTH - startBtnWidth) / 2;
-        int startBtnY = GameConstants.Screen.SCREENHEIGHT / 2 - 100;
-
-        int settingsBtnWidth = settingsBtn.getWidth();
-        int settingsBtnX = (GameConstants.Screen.SCREENWIDTH - settingsBtnWidth) / 2;
-        int settingsBtnY = GameConstants.Screen.SCREENHEIGHT / 2 + 50;
-
-        c.drawBitmap(startBtn, startBtnX, startBtnY, null);
-        c.drawBitmap(settingsBtn, settingsBtnX, settingsBtnY, null);
-    }
-
-    public void setStartButtonPressed(boolean pressed) {
-        startButtonPressed = pressed;
-    }
-
-    public boolean isStartButtonPressed() {
-        return startButtonPressed;
-    }
-
-    public Bitmap getStartButtonBitmapUnpressed() {
-        return startButtonBitmapUnpressed;
+        c.drawBitmap(startBtn, GameConstants.MenuButtons.startButtonX, GameConstants.MenuButtons.startButtonY, null);
+        c.drawBitmap(settingsBtn, GameConstants.MenuButtons.settingsButtonX, GameConstants.MenuButtons.settingsButtonY, null);
     }
 
     public void startGame() {
@@ -237,16 +237,7 @@ public class GameState {
     }
 
     public void drawGameOverScreen(Canvas c) {
-        Paint bgPaint = new Paint();
-        bgPaint.setColor(Color.argb(230, 30, 30, 50));
-        c.drawRect(0, 0, GameConstants.Screen.SCREENWIDTH, GameConstants.Screen.SCREENHEIGHT, bgPaint);
-
-        Paint textPaint = new Paint();
-        textPaint.setColor(Color.WHITE);
-        textPaint.setTextSize(200);
-        textPaint.setTypeface(pixelFont);
-        textPaint.setTextAlign(Paint.Align.CENTER);
-        c.drawText("Game Over", GameConstants.Screen.SCREENWIDTH / 2, GameConstants.Screen.SCREENHEIGHT / 2 - 100, textPaint);
+        drawScreen(c, "Game Over");
 
         int btnX = GameConstants.MenuButtons.restartButtonX;
         int btnY = GameConstants.MenuButtons.restartButtonY;
@@ -256,6 +247,50 @@ public class GameState {
 
     public void setGameOver() {
         state = State.GAME_OVER;
+    }
+
+    public void drawWinningScreen(Canvas c) {
+        drawScreen(c, "You Win!");
+
+        int restartBtnX = GameConstants.MenuButtons.restartButtonX;
+        int restartBtnY = GameConstants.MenuButtons.restartButtonY + 300;
+        Bitmap restartBtnBitmap = restartButtonPressed ? restartButtonBitmapPressed : restartButtonBitmapUnpressed;
+        // TODO back to menu button
+        int menuBtnX = GameConstants.MenuButtons.menuButtonX;
+        int menuBtnY = GameConstants.MenuButtons.menuButtonY;
+        Bitmap menuBtnBitmap = menuButtonPressed ? menuButtonBitmapPressed : menuButtonBitmapUnpressed;
+
+        c.drawBitmap(restartBtnBitmap, restartBtnX, restartBtnY, null);
+        c.drawBitmap(menuBtnBitmap, menuBtnX, menuBtnY, null);
+    }
+
+    public void setWin() {
+        state = State.WINNING;
+    }
+
+    public void drawScreen(Canvas c, String message) {
+        Paint bgPaint = new Paint();
+        bgPaint.setColor(Color.argb(230, 30, 30, 50));
+        c.drawRect(0, 0, GameConstants.Screen.SCREENWIDTH, GameConstants.Screen.SCREENHEIGHT, bgPaint);
+
+        Paint textPaint = new Paint();
+        textPaint.setColor(Color.WHITE);
+        textPaint.setTextSize(200);
+        textPaint.setTypeface(pixelFont);
+        textPaint.setTextAlign(Paint.Align.CENTER);
+        c.drawText(message, GameConstants.Screen.SCREENWIDTH / 2, GameConstants.Screen.SCREENHEIGHT / 2 - 100, textPaint);
+    }
+    // Start button
+    public void setStartButtonPressed(boolean pressed) {
+        startButtonPressed = pressed;
+    }
+
+    public boolean isStartButtonPressed() {
+        return startButtonPressed;
+    }
+    // Restart button
+    public Bitmap getStartButtonBitmapUnpressed() {
+        return startButtonBitmapUnpressed;
     }
 
     public void setRestartButtonPressed(boolean pressed) {
@@ -268,6 +303,18 @@ public class GameState {
 
     public Bitmap getRestartButtonBitmapUnpressed() {
         return restartButtonBitmapUnpressed;
+    }
+    // Get to menu button
+    public void setMenuButtonPressed(boolean pressed) {
+        menuButtonPressed = pressed;
+    }
+
+    public boolean isMenuButtonPressed() {
+        return menuButtonPressed;
+    }
+
+    public Bitmap getMenuButtonBitmapUnpressed() {
+        return menuButtonBitmapUnpressed;
     }
 
     // TODO settings function not yet implemented

@@ -158,15 +158,15 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
             Bitmap startBtnBmp = gameState.getStartButtonBitmapUnpressed();
             int startBtnWidth = startBtnBmp.getWidth();
             int startBtnHeight = startBtnBmp.getHeight();
-            int startBtnX = (GameConstants.Screen.SCREENWIDTH - startBtnWidth) / 2;
-            int startBtnY = GameConstants.Screen.SCREENHEIGHT / 2 - 100;
+            int startBtnX = GameConstants.MenuButtons.startButtonX;
+            int startBtnY = GameConstants.MenuButtons.startButtonY;
 
             // Settings button
             Bitmap settingsBtnBmp = gameState.getSettingsButtonBitmapUnpressed();
             int settingsBtnWidth = settingsBtnBmp.getWidth();
             int settingsBtnHeight = settingsBtnBmp.getHeight();
-            int settingsBtnX = (GameConstants.Screen.SCREENWIDTH - settingsBtnWidth) / 2;
-            int settingsBtnY = GameConstants.Screen.SCREENHEIGHT / 2 + 50;
+            int settingsBtnX = GameConstants.MenuButtons.settingsButtonX;
+            int settingsBtnY = GameConstants.MenuButtons.settingsButtonY;
 
             boolean insideStart = x >= startBtnX && x <= startBtnX + startBtnWidth &&
                     y >= startBtnY && y <= startBtnY + startBtnHeight;
@@ -218,6 +218,51 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
                     break;
             }
             return true;
+        } else if (currentState == GameState.State.WINNING) {
+            // Restart button logic
+            int restartBtnWidth = gameState.getRestartButtonBitmapUnpressed().getWidth();
+            int restartBtnHeight = gameState.getRestartButtonBitmapUnpressed().getHeight();
+            int restartBtnX = GameConstants.MenuButtons.restartButtonX;
+            int restartBtnY = GameConstants.MenuButtons.restartButtonY + 300; // TODO Match draw position
+
+            // Menu button logic
+            int menuBtnWidth = gameState.getMenuButtonBitmapUnpressed().getWidth();
+            int menuBtnHeight = gameState.getMenuButtonBitmapUnpressed().getHeight();
+            int menuBtnX = GameConstants.MenuButtons.menuButtonX;
+            int menuBtnY = GameConstants.MenuButtons.menuButtonY;
+
+            boolean insideRestart = x >= restartBtnX && x <= restartBtnX + restartBtnWidth &&
+                    y >= restartBtnY && y <= restartBtnY + restartBtnHeight;
+            boolean insideMenu = x >= menuBtnX && x <= menuBtnX + menuBtnWidth &&
+                    y >= menuBtnY && y <= menuBtnY + menuBtnHeight;
+
+            switch (event.getAction()) {
+                case MotionEvent.ACTION_DOWN:
+                    gameState.setRestartButtonPressed(insideRestart);
+                    gameState.setMenuButtonPressed(insideMenu);
+                    break;
+                case MotionEvent.ACTION_UP:
+                    if (gameState.isRestartButtonPressed() && insideRestart) {
+                        gameState.reset();
+                        resetGameObjects();
+                    }
+                    if (gameState.isMenuButtonPressed() && insideMenu) {
+                        gameState.setMenuButtonPressed(false);
+                        gameState.setStartButtonPressed(false);
+                        gameState.setRestartButtonPressed(false);
+                        gameState.setSettingsButtonPressed(false);
+                        resetGameObjects();
+                        gameState.setState(GameState.State.STARTING);
+                    }
+                    gameState.setRestartButtonPressed(false);
+                    gameState.setMenuButtonPressed(false);
+                    break;
+                case MotionEvent.ACTION_CANCEL:
+                    gameState.setRestartButtonPressed(false);
+                    gameState.setMenuButtonPressed(false);
+                    break;
+            }
+            return true;
         }
 
         // In-game controls
@@ -262,6 +307,14 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
             gameState.drawGameOverScreen(c);
         }
 
+//      TODO  if (gameState.getState() == GameState.State.PAUSED) {
+//            gameState.drawPauseScreen(c);
+//        }
+
+        if (gameState.getState() == GameState.State.WINNING) {
+            gameState.drawWinningScreen(c);
+        }
+
         surfaceHolder.unlockCanvasAndPost(c);
     }
 
@@ -273,6 +326,10 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
             resetGameObjects();
             return;
         }
+        if (gameState.getState() == GameState.State.WINNING) {
+            return;
+        }
+
         // Handle player input and animation
         player.tryConsumeJumpBuffer();
         player.updateAnimation();
@@ -343,7 +400,7 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
                         player.playerY < horse.y + GameConstants.Horse.HEIGHT;
 
         if (playerReachedHorse) {
-            gameState.setGameOver(); // or gameState.setState(GameState.GAME_OVER);
+            gameState.setWin();
         }
 
         gameState.updateTimer();
@@ -512,6 +569,7 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
 
     /**
      * Checks if the player is hit by an enemy bullet.
+     *
      * @param bullet The bullet to check
      * @return true if hit
      */
@@ -535,8 +593,10 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
 
 
     // --- private resource loading#
+
     /**
      * Loads and scales background images.
+     *
      * @param context Android context
      */
     private void loadBackgrounds(Context context) {
@@ -551,6 +611,7 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
 
     /**
      * Returns the scaled collision rectangle for an enemy.
+     *
      * @param enemy The enemy
      * @return RectF representing the collision box
      */
@@ -588,6 +649,7 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
 
     /**
      * Gets the player instance.
+     *
      * @return Player object
      */
     public Player getPlayer() {

@@ -49,15 +49,17 @@ public final class GameConstants {
     }
 
     public static final class MenuButtons {
-        public static final float scale = 4f;
         public static final int btnWidth = 64;
         public static final int btnHeight = 26;
-        public static final int startButtonX = GameConstants.Screen.SCREENWIDTH / 2 - btnWidth / 2;
-        public static final int startButtonY = GameConstants.Screen.SCREENHEIGHT / 2 - 100;
-        public static final int restartButtonX = GameConstants.Screen.SCREENWIDTH / 2 - btnWidth / 2 - 100;
-        public static final int restartButtonY = GameConstants.Screen.SCREENHEIGHT / 2 + 50;
-//        public static final int settingsButtonX = 100;
-//        public static final int settingsButtonY = 100;
+        public static final float scale = 4f;
+        public static final int startButtonX = (Screen.SCREENWIDTH - (int)(btnWidth * scale)) / 2;
+        public static final int startButtonY = (Screen.SCREENHEIGHT - (int)(btnHeight * scale)) / 2 - 100;
+        public static final int settingsButtonX = (Screen.SCREENWIDTH - (int)(btnWidth * scale)) / 2;
+        public static final int settingsButtonY = (Screen.SCREENHEIGHT - (int)(btnHeight * scale)) / 2 + 100;
+        public static final int restartButtonX = (Screen.SCREENWIDTH - (int)(btnWidth * scale)) / 2;
+        public static final int restartButtonY = (Screen.SCREENHEIGHT - (int)(btnHeight * scale)) / 2 - 100;
+        public static final int menuButtonX = (Screen.SCREENWIDTH - (int)(btnWidth * scale)) / 2;
+        public static final int menuButtonY = (Screen.SCREENHEIGHT - (int)(btnHeight * scale)) / 2;
     }
 
 
