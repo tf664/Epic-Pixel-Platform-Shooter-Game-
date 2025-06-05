@@ -253,7 +253,7 @@ public class GameState {
         drawScreen(c, "You Win!");
 
         int restartBtnX = GameConstants.MenuButtons.restartButtonX;
-        int restartBtnY = GameConstants.MenuButtons.restartButtonY + 300;
+        int restartBtnY = GameConstants.MenuButtons.restartButtonY + GameConstants.MenuButtons.restartButtonWinOffset;
         Bitmap restartBtnBitmap = restartButtonPressed ? restartButtonBitmapPressed : restartButtonBitmapUnpressed;
         // TODO back to menu button
         int menuBtnX = GameConstants.MenuButtons.menuButtonX;

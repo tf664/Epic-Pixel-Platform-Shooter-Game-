@@ -60,6 +60,7 @@ public final class GameConstants {
         public static final int restartButtonY = (Screen.SCREENHEIGHT - (int)(btnHeight * scale)) / 2 - 100;
         public static final int menuButtonX = (Screen.SCREENWIDTH - (int)(btnWidth * scale)) / 2;
         public static final int menuButtonY = (Screen.SCREENHEIGHT - (int)(btnHeight * scale)) / 2;
+        public static final int restartButtonWinOffset = 300;
     }
 
 

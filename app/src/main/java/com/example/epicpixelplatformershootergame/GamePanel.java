@@ -223,7 +223,7 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
             int restartBtnWidth = gameState.getRestartButtonBitmapUnpressed().getWidth();
             int restartBtnHeight = gameState.getRestartButtonBitmapUnpressed().getHeight();
             int restartBtnX = GameConstants.MenuButtons.restartButtonX;
-            int restartBtnY = GameConstants.MenuButtons.restartButtonY + 300; // TODO Match draw position
+            int restartBtnY = GameConstants.MenuButtons.restartButtonY + GameConstants.MenuButtons.restartButtonWinOffset;
 
             // Menu button logic
             int menuBtnWidth = gameState.getMenuButtonBitmapUnpressed().getWidth();
